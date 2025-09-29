@@ -1,6 +1,6 @@
 <h1> Deep Learning for Anti-Money Laundering: Detecting Suspicious Transactions </h1>
 
-<h3>Team Members:Heba Bou KaedBey, Min Shi, Ritesh Bachhar, Khanh Nguyen </h3>
+<h3>Team Members: Heba Bou KaedBey, Min Shi, Ritesh Bachhar, Khanh Nguyen </h3>
 
 Define Problem: Money laundering is the process of conversion of illicit money which comes out of the crime which is then intermixed with the licit money to make appear legitimate, and it becomes very difficult to distinguish the legitimate money from the illegitimate one.
 
