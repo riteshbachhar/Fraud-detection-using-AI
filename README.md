@@ -27,7 +27,7 @@ Fraud and money laundering continue to burden financial institutions, with indir
 
 <h3 id="Dataset">Dataset</h3>
 
-The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-monitoring-dataset-aml/data">SAML-D dataset</a> comprises 12 characteristics and 28 typologies, selected based on existing datasets, academic literature, and interviews with AML specialists, which highlights its broad applicability. It contains 9.5 million entries, however, the `isLaundering` labels are highly imbalanced, with only 0.15\% representing actual money laundering activity. In addition, the data set includes 15 graphical network structures that model transaction flows within these typologies. Although some structures are shared between types, they differ significantly in parameters to increase complexity and challenge detection efforts.
+The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-monitoring-dataset-aml/data">SAML-D dataset</a> is a synthetic dataset of 9.5 million tranactions, developed using insights from AML specialists through semi-structured interviews, analysis of existing datasets, and a comprehensive literature review. The dataset includes 28 typologies, 11 normal and 17 suspicious, modelled to reflect real-world senarios, with overlapping behaviours between normaal and suspicious transactions to increase complexity and challenge detection efforts. The dataset includes 676,912 unique accounts conducting transactions across 18 geographic locations, using 13 currencies and 7 payment methods. Among these, 0.104% of the transactions (9,873 entires) are labeled as suspicious representing various money laundering techniques such as layering, rapid fund movement, and transactions to high risk locations.
 
 ---
 
