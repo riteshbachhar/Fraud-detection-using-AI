@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data files (don't commit large datasets)
+data/
+*.csv
+*.zip
+*.parquet
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+
+# Model files
+models/
+*.pt
+*.pth
+*.h5
+*.keras
+*.ckpt
+*.pb
+*.onnx
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Kaggle credentials
+.kaggle/
+kaggle.json
+
+# Experiment tracking
+mlruns/
+wandb/
+.neptune/
+
+# Temporary files
+*.tmp
+*.bak
+.cache/
+
+# OS
+Thumbs.db
+.DS_Store
