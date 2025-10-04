@@ -1,13 +1,16 @@
 """
-Data download utilities for Kaggle datasets
+Data related utilities for Kaggle datasets
 """
 
 from pathlib import Path
+# Project root directory
+PROJECT_ROOT = Path(__file__).parent.parent.absolute()
 
+from config import DATA_DIR
 
 def download_kaggle_dataset(
     dataset_name: str,
-    output_dir: str = "./data",
+    output_dir: str = DATA_DIR,
     unzip: bool = True
 ):
     """
@@ -73,7 +76,7 @@ def download_kaggle_dataset(
         return False
 
 
-def download_saml_dataset(output_dir: str = "./data"):
+def download_saml_dataset(output_dir: str = DATA_DIR):
     """
     Download the SAML-D AML dataset
     

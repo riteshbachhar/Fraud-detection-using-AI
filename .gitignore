@@ -31,14 +31,10 @@ ENV/
 *.ipynb_checkpoints/
 
 # Data files (don't commit large datasets)
-data/
-*.csv
-*.zip
-*.parquet
-*.pkl
-*.pickle
-*.h5
-*.hdf5
+data/*
+!data/raw/
+data/raw/*
+!data/raw/sample_SAML-D.csv
 
 # Model files
 models/
