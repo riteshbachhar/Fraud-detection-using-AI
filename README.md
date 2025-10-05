@@ -29,6 +29,21 @@ Fraud and money laundering continue to burden financial institutions, with indir
 
 The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-monitoring-dataset-aml/data">SAML-D dataset</a> is a synthetic dataset of 9.5 million transactions, developed using insights from AML specialists through semi-structured interviews, analysis of existing datasets, and a comprehensive literature review. The dataset includes 28 typologies, 11 normal and 17 suspicious, modelled to reflect real-world senarios, with overlapping behaviours between normaal and suspicious transactions to increase complexity and challenge detection efforts. The dataset includes 676,912 unique accounts conducting transactions across 18 geographic locations, using 13 currencies and 7 payment methods. Among these, 0.104% of the transactions (9,873 entires) are labeled as suspicious representing various money laundering techniques such as layering, rapid fund movement, and transactions to high risk locations.
 
+The dataset includes the following 12 features:
+
+- `Time`:
+- `Date`:
+- `Sender_account`:
+- `Receiver_account`:
+- `Amount`:
+- `Payment_currency`:
+- `Received_currency`:
+- `Sender_bank_location`:
+- `Receiver_bank_location`:
+- `Payment_type`:
+- `Is_laundering`:
+- `Laundering_type`:
+
 ---
 
 <h3 id="Citations">Citations</h3>
@@ -42,3 +57,8 @@ The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-m
 ---
 
 <h3 id="Code-Description">Code Description</h3>
+
+- [data/raw/sample_SAML-D.csv](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/data/raw/sample_SAML-D.csv): a sample dataset comprising the first 500,000 transactions
+- [notebooks/colab_setup.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/colab_setup.ipynb): instructions for setting up Google Colab
+- [utils/download_dataset.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/utils/download_dataset.py): download the full dataset, but it requires the Kaggle API
+
