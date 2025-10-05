@@ -11,7 +11,7 @@ Define Problem: Money laundering is the process of conversion of illicit money w
 <ul>
     <li><a href="#Introduction">Introduction</a></li>
     <li><a href="#Dataset">Dataset</a></li>
-    <li><a href="#Referencecs">References</a></li>
+    <li><a href="#References">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
 </ul>
 
@@ -31,18 +31,18 @@ The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-m
 
 The dataset includes the following 12 features:
 
-- `Time`:
-- `Date`:
-- `Sender_account`:
-- `Receiver_account`:
-- `Amount`:
-- `Payment_currency`:
-- `Received_currency`:
-- `Sender_bank_location`:
-- `Receiver_bank_location`:
-- `Payment_type`:
-- `Is_laundering`:
-- `Laundering_type`:
+- `Time`: Time of transaction, formatted as HH:MM:ss
+- `Date`: Date of transaction, formatted as YYYY:MM:DD; ranges from October 6, 2022 to August 22, 2023
+- `Sender_account`: Unique identifier for the sender's account
+- `Receiver_account`: Unique identifier for the receiver's account
+- `Amount`: Transaction amount
+- `Payment_currency`: Currency used by the sender
+- `Received_currency`: Currency received by the receiver; may differ from the sender's currency
+- `Sender_bank_location`: Country where the sender's bank is located
+- `Receiver_bank_location`: Country where the receiver's bank is located
+- `Payment_type`: Type of payment, such as credit card, debit card, cash, etc.
+- `Is_laundering`: Target variable indicating whether the transaction is laundering (`1`) or not (`0`)
+- `Laundering_type`: A categorical feature that includes 28 laundering typologies, 11 classified as normal and 17 as suspicious, derived from literature and semi-structured interviews with AML specialists.
 
 ---
 
