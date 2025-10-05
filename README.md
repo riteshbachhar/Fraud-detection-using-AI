@@ -58,7 +58,8 @@ The dataset includes the following 12 features:
 
 <h3 id="Code-Description">Code Description</h3>
 
-- [data/raw/sample_SAML-D.csv](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/data/raw/sample_SAML-D.csv): a sample dataset comprising the first 500,000 transactions
+- [config.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/config.py): include various paths such as `DATAPATH`, `SAMPLE_DATAPATH`, and others. Use the configuration file in your notebook
 - [notebooks/colab_setup.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/colab_setup.ipynb): instructions for setting up Google Colab
+- [notebooks/dataset_download.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/dataset_download.ipynb): generate a sample dataset (first N rows) from the full dataset for quick experimentation
+- [data/raw/sample_SAML-D.csv](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/data/raw/sample_SAML-D.csv): a sample dataset comprising the first 500,000 transactions
 - [utils/download_dataset.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/utils/download_dataset.py): download the full dataset, but it requires the Kaggle API
-
