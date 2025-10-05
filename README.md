@@ -11,7 +11,7 @@ Define Problem: Money laundering is the process of conversion of illicit money w
 <ul>
     <li><a href="#Introduction">Introduction</a></li>
     <li><a href="#Dataset">Dataset</a></li>
-    <li><a href="#Citations">Citations</a></li>
+    <li><a href="#Referencecs">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
 </ul>
 
@@ -46,7 +46,7 @@ The dataset includes the following 12 features:
 
 ---
 
-<h3 id="Citations">Citations</h3>
+<h3 id="References">References</h3>
 <ul>
 <li>LexisNexis Risk Solutions. <a href=https://risk.lexisnexis.com/about-us/press-room/press-release/20240424-tcof-financial-services-lending>Every Dollar Lost to a Fraudster Costs North America's Financial Institutions $4.45</a>. LexisNexis Risk Solutions, 24 Apr. 2024.</li>
 <li> B. Oztas, D. Cetinkaya, F. Adedoyin, M. Budka, H. Dogan and G. Aksu, "Enhancing Anti-Money Laundering: Development of a Synthetic Transaction Monitoring Dataset," 2023 IEEE International Conference on e-Business Engineering (ICEBE), Sydney, Australia, 2023, pp. 47-54, doi: 10.1109/ICEBE59045.2023.00028.</li>
