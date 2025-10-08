@@ -35,7 +35,7 @@ The dataset includes the following 12 features:
 - `Date`: Date of transaction, formatted as YYYY:MM:DD; ranges from October 6, 2022 to August 22, 2023
 - `Sender_account`: Unique identifier for the sender's account
 - `Receiver_account`: Unique identifier for the receiver's account
-- `Amount`: Transaction amount
+- `Amount`: Transaction amount; currency: British pounds (£)
 - `Payment_currency`: Currency used by the sender
 - `Received_currency`: Currency received by the receiver; may differ from the sender's currency
 - `Sender_bank_location`: Country where the sender's bank is located
