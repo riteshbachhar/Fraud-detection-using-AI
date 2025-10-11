@@ -99,7 +99,7 @@ In addition, we engineered several domain‑specific features designed to captur
 <li>LexisNexis Risk Solutions. <a href=https://risk.lexisnexis.com/about-us/press-room/press-release/20240424-tcof-financial-services-lending>Every Dollar Lost to a Fraudster Costs North America's Financial Institutions $4.45</a>. LexisNexis Risk Solutions, 24 Apr. 2024.</li>
 <li> B. Oztas, D. Cetinkaya, F. Adedoyin, M. Budka, H. Dogan and G. Aksu, "Enhancing Anti-Money Laundering: Development of a Synthetic Transaction Monitoring Dataset," 2023 IEEE International Conference on e-Business Engineering (ICEBE), Sydney, Australia, 2023, pp. 47-54, doi: 10.1109/ICEBE59045.2023.00028.</li>
 <li>Oztas, Berkan, et al. "Tab-AML: A Transformer Based Transaction Monitoring Model for Anti-Money Laundering." 2025 IEEE Conference on Artificial Intelligence (CAI). IEEE, 2025.</li>
-<li>Grigorescu, Petre-Cornel, and Antoaneta Amza. "Explainable Feature Engineering for Multi-class Money Laundering Classification." Informatica Economică, vol. 29, no. 1, 2025, pp. 64–78. <a href=https://doi.org/10.24818/issn14531305/29.1.2025.06>https://doi.org/10.24818/issn14531305/29.1.2025.06</a>.
+<li>Grigorescu, Petre-Cornel, and Antoaneta Amza. "Explainable Feature Engineering for Multi-class Money Laundering Classification." Informatica Economică, vol. 29, no. 1, 2025, pp. 64–78, doi: 10.24818/issn14531305.
 </li>
 </ul>
 
