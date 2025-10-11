@@ -57,7 +57,7 @@ The dataset includes the following 12 features:
 
 <h4 id="Recasting">Memory Optimization via Integer Recasting</h4>
 
-We wrote a function to recast integer-based columns (`int64` and `int32`) according to the following logic:
+We implemented a function to optimize memory usage by downcasting integer columns. Columns originally typed as `int64` or `int32` were recast to the smallest suitable type (`int8`, `int16`, or `int32`) according to the following logic:
 
 - If the maximum value in a column is less than 127, recast it to `int8`.
 - If the maximum value is less than 32,768, recast it to `int16`.
@@ -73,8 +73,8 @@ We customized the train–validation–test split to respect the temporal nature
 The full dataset spans 320 days. We designated the first 250 days for training, leaving a 70‑day holdout period. Of this holdout, the first 35 days were used for validation and the final 35 days for testing. This corresponds to a split of approximately 78.17% / 10.99% / 10.84% for training, validation, and test sets, respectively. The distribution of the positive class (class `1`) across these splits was 0.00101 / 0.00114 / 0.00116, which shows that the rare‑event class remained consistently represented across all partitions.
 
 This temporal splitting strategy serves two purposes:
-- Prevents data leakage — ensuring that information from the future does not inadvertently influence the training process.
-- Maintains class stratification — preserving the relative balance of rare and common classes across all subsets, which is critical for reliable model evaluation.
+- Prevents data leakage: ensuring that information from the future does not inadvertently influence the training process.
+- Maintains class stratification: preserving the relative balance of rare and common classes across all subsets, which is critical for reliable model evaluation.
 
 ---
 
