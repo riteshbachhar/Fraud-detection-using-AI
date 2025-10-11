@@ -11,6 +11,11 @@ Define Problem: Money laundering is the process of conversion of illicit money w
 <ul>
     <li><a href="#Introduction">Introduction</a></li>
     <li><a href="#Dataset">Dataset</a></li>
+    <li><a href="#Preprocessing">Preprocessing</a></li>
+        <ul>
+            <li><a href="#Recasting">Memory Optimization via Integer Recasting</a></li>
+            <li><a href="#Train-Test-split">Custom Train-test split</a></li>
+        </ul>
     <li><a href="#References">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
 </ul>
@@ -43,6 +48,31 @@ The dataset includes the following 12 features:
 - `Payment_type`: Type of payment, such as credit card, debit card, cash, etc.
 - `Is_laundering`: Target variable indicating whether the transaction is laundering (`1`) or not (`0`)
 - `Laundering_type`: A categorical feature that includes 28 laundering typologies, derived from literature and semi-structured interviews with AML specialists.
+- 
+---
+
+<h3 id="Preprocessing">Preprocessing</h3>
+
+<h4 id="Recasting">Memory Optimization via Integer Recasting</h4>
+
+We wrote a function to recast integer-based columns (`int64` and `int32`) according to the following logic:
+
+- If the maximum value in a column is less than 127, recast it to `int8`.
+- If the maximum value is less than 32,768, recast it to `int16`.
+- If the maximum value is less than 2,147,483,647, recast it to `int32`.
+- Otherwise, keep the column as `int64`.
+
+We excluded the `Sender_account` and `Receiver_account` columns from this recasting process.
+
+<h4 id="Train-Test-split">Custom Train-test split</h4>
+
+We customized the train–validation–test split to respect the temporal nature of the data. Since many of our engineered features rely on 30‑day rolling windows, it was essential to partition the dataset chronologically rather than randomly.
+
+The full dataset spans 320 days. We designated the first 250 days for training, leaving a 70‑day holdout period. Of this holdout, the first 35 days were used for validation and the final 35 days for testing. This corresponds to a split of approximately 78.17% / 10.99% / 10.84% for training, validation, and test sets, respectively. The distribution of the positive class (class `1`) across these splits was 0.00101 / 0.00114 / 0.00116, which shows that the rare‑event class remained consistently represented across all partitions.
+
+This temporal splitting strategy serves two purposes:
+- Prevents data leakage — ensuring that information from the future does not inadvertently influence the training process.
+- Maintains class stratification — preserving the relative balance of rare and common classes across all subsets, which is critical for reliable model evaluation.
 
 ---
 
