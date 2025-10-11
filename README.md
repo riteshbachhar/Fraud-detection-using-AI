@@ -16,6 +16,7 @@ Define Problem: Money laundering is the process of conversion of illicit money w
             <li><a href="#Recasting">Memory Optimization via Integer Recasting</a></li>
             <li><a href="#Train-Test-split">Custom Train-test split</a></li>
         </ul>
+    <li><a href="Features">Time‑Based and Graph‑Inspired Feature Engineering</a></li>
     <li><a href="#References">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
 </ul>
@@ -74,6 +75,22 @@ The full dataset spans 320 days. We designated the first 250 days for training, 
 This temporal splitting strategy serves two purposes:
 - Prevents data leakage — ensuring that information from the future does not inadvertently influence the training process.
 - Maintains class stratification — preserving the relative balance of rare and common classes across all subsets, which is critical for reliable model evaluation.
+
+---
+
+<h3 id="Features">Time‑Based and Graph‑Inspired Feature Engineering</h3>
+
+From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
+
+In addition, we engineered several domain‑specific features designed to capture structural and behavioral signals of anomalous activity:
+
+- `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
+- `fan_in_out_ratio`: The ratio of inbound to outbound counterparties over 30 days, highlighting imbalances in transactional relationships.
+- `fanin_intensity_ratio`: The `fanin_30d` value normalized by the daily number of received transactions, concentration of inbound activity.
+- `amount_dispersion_std`: The standard deviation of transaction amounts per sender, capturing volatility in counterparties' transfer sizes.
+- `sent_to_received_ratio_monthly`: The ratio of total received to total sent amounts within a month. Ratios trending toward 1 may indicate circular or balancing behavior that warrants scrutiny
+- `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
+- `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
 
 ---
 
