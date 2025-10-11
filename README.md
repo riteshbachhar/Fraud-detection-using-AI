@@ -48,7 +48,8 @@ The dataset includes the following 12 features:
 - `Payment_type`: Type of payment, such as credit card, debit card, cash, etc.
 - `Is_laundering`: Target variable indicating whether the transaction is laundering (`1`) or not (`0`)
 - `Laundering_type`: A categorical feature that includes 28 laundering typologies, derived from literature and semi-structured interviews with AML specialists.
-- 
+
+
 ---
 
 <h3 id="Preprocessing">Preprocessing</h3>
