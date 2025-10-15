@@ -72,6 +72,10 @@ wandb/
 *.bak
 .cache/
 
+# Temporary directories
+temp/
+tmp/
+
 # OS
 Thumbs.db
 .DS_Store
