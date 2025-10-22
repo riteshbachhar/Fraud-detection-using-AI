@@ -17,6 +17,12 @@ Define Problem: Money laundering is the process of conversion of illicit money w
             <li><a href="#Train-Test-split">Custom Train-test split</a></li>
         </ul>
     <li><a href="Features">Time‑Based and Graph‑Inspired Feature Engineering</a></li>
+    <li><a href="#Models">Models</a></li>
+        <ul>
+            <li><a href="#Baseline">1. Baseline Model: XGBoost</a></li>
+            <li><a href="#Transformer">2. Transformer</a></li>
+            <li><a href="#GCN">3. Graph Neural Network</a></li>
+        </ul>
     <li><a href="#References">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
 </ul>
@@ -92,15 +98,62 @@ In addition, we engineered several domain‑specific features designed to captur
 - `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
 - `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
 
+Using the correlation matrix (see Figure 1), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
+
+<p float="left">
+  <img src="/Figures/corr_matrix.png" width="1000" />
+</p>
+<p align="center"><b>Figure 1. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+
+---
+
+<h3 id="Models">Models</h3>
+
+<h4 id="Baseline">1. Baseline Model: XGBoost</h4>
+
+We selected XGBoost as our baseline for its resistance to overfitting: its tree‑based architecture handles outliers well, and built‑in regularization and shrinkage mitigate overfitting on noisy transactional data.
+
+We tuned hyperparameters to maximize the F1 score, then applied the best configuration to the final model. Retraining on the combined training and validation sets maximized the available learning signal. We generated class predictions on the held‑out test set and evaluated performance using the confusion matrix, F1 score, precision, and recall. To interpret model behavior and quantify each feature's contribution, we computed SHAP values and ranked features by their mean absolute SHAP importance.
+
+Parameters considered:
+- `max_depth`: 3, 5, 10
+- `learning_rate`: 0.1, 0.05, 0.01
+- `subsample`: 0.3, 0.5, 1
+
+<h4 id="Transformer">2. Transformer</h4>
+
+The transformer was selected as one of the deep learning models, drawing inspiration from the Tab-AML Tranformer in "Tab-AML: A Transformer Based Transaction Monitoring Model for Anti-Money Laundering." This choice was motivated by the Transformer's strong ability to capture complex relationships among categorical and numerical features in financial data. 
+
+Each Categorical feature is first transformed into a learned embedding vector. These embeddings are then processed by two encoder modules:
+- A micro encoder that focuses on the sender-receiver relationship, learning direct transaction-level dependancies. 
+- A macro-encoder that integrates all categorical and continuous features to learn broader contextual and temporal patterns. 
+
+Through multi-head self attention residual attention and shared embedding, the Transformer captures complex relationships among transaction features. Residual attention ensure that previously learned information is preserved through multiple layers, enabling the model to understand complex financial behaviors at differnt levels of detail. Thus, it is suitable for detecting indirect money laundering activities.
+
+<h4 id="GCN">3. Graph Neural Network</h4>
+
+Traditional rule-based methods have proven inadequate for detecting the sophisticated money laundering patterns prevalent in today's financial system. Recent work has demonstrated that Graph Neural Networks can effectively learn from graph-structured data, achieving substantial improvements in financial fraud detection. Building on these advances, our objective is to develop a Graph Neural Network model that detects money laundering activities with greater than 85% recall while maintaining operational precision, leveraging the explicit network structures embedded in the SAML-D dataset.
+
+**Advantages of GNN:**
+
+- **Relational reasoning:** Captures dependencies between account
+- **Structural pattern recognition:** Explicitly models network typologies
+- **Information propagation:** Aggregates multi-hop neighborhood features
+
+**Graph Construction & GNN Models:**
+We propose to construct a transaction graph where each account represents a node and each transaction forms a directed edge between accounts. Node features capture aggregate account characteristics, including transaction statistics, network metrics, behavioral patterns, and temporal statistics. Edge features encode transaction-specific attributes such as amount, inter-arrival time, geographic properties, and payment type.
+
+We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, which enables scalable neighborhood sampling and aggregation for efficient learning on large graphs, and **(2) Graph Attention Networks~(GAT)**, which learn adaptive attention weights over neighbors to identify the most relevant connections for risk assessment and provide interpretability for regulatory compliance.
+ 
 ---
 
 <h3 id="References">References</h3>
 <ul>
 <li>LexisNexis Risk Solutions. <a href=https://risk.lexisnexis.com/about-us/press-room/press-release/20240424-tcof-financial-services-lending>Every Dollar Lost to a Fraudster Costs North America's Financial Institutions $4.45</a>. LexisNexis Risk Solutions, 24 Apr. 2024.</li>
-<li> B. Oztas, D. Cetinkaya, F. Adedoyin, M. Budka, H. Dogan and G. Aksu, "Enhancing Anti-Money Laundering: Development of a Synthetic Transaction Monitoring Dataset," 2023 IEEE International Conference on e-Business Engineering (ICEBE), Sydney, Australia, 2023, pp. 47-54, doi: 10.1109/ICEBE59045.2023.00028.</li>
+<li>Grigorescu, Petre-Cornel, and Antoaneta Amza. "Explainable Feature Engineering for Multi-class Money Laundering Classification." Informatica Economică, vol. 29, no. 1, 2025, pp. 64–78, doi: 10.24818/issn14531305.</li>
+<li>B. Oztas, D. Cetinkaya, F. Adedoyin, M. Budka, H. Dogan and G. Aksu, "Enhancing Anti-Money Laundering: Development of a Synthetic Transaction Monitoring Dataset," 2023 IEEE International Conference on e-Business Engineering (ICEBE), Sydney, Australia, 2023, pp. 47-54, doi: 10.1109/ICEBE59045.2023.00028.</li>
 <li>Oztas, Berkan, et al. "Tab-AML: A Transformer Based Transaction Monitoring Model for Anti-Money Laundering." 2025 IEEE Conference on Artificial Intelligence (CAI). IEEE, 2025.</li>
-<li>Grigorescu, Petre-Cornel, and Antoaneta Amza. "Explainable Feature Engineering for Multi-class Money Laundering Classification." Informatica Economică, vol. 29, no. 1, 2025, pp. 64–78, doi: 10.24818/issn14531305.
-</li>
+<li>Phan, T.T.T. (2025). Leveraging Graph Neural Networks and Optimization Algorithms to Enhance Anti-money Laundering Systems. In: Le Thi, H.A., Le, H.M., Nguyen, Q.T. (eds) Advances in Data Science and Optimization of Complex Systems. ICAMCS 2024. Lecture Notes in Networks and Systems, vol 1311. Springer.</li>
 </ul>
 
 
