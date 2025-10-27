@@ -110,13 +110,6 @@ In addition, we engineered several domain‑specific features designed to captur
 - `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
 - `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
 
-Using the correlation matrix (see Figure 1), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
-
-<p float="left">
-  <img src="/Figures/corr_matrix.png" width="1000" />
-</p>
-<p align="center"><b>Figure 1. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
-
 ---
 
 <h3 id="Baseline">Baseline Model: XGBoost</h3>
@@ -133,6 +126,13 @@ Parameters considered:
 - `subsample`: 0.3, 0.5, 1
 
 <h4 id="Baseline-Preprocess">Preprocess</h4>
+
+Using the correlation matrix (see Figure 1), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
+
+<p float="left">
+  <img src="/Figures/corr_matrix.png" width="1000" />
+</p>
+<p align="center"><b>Figure 1. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
 <h4 id="Baseline-Result">Result</h4>
 
@@ -156,7 +156,12 @@ Through multi-head self attention residual attention and shared embedding, the T
 - Macro Attention Encoder: Aggregates contextual information across all categorical features. 
 - MLP: Combines flattened Transformer output and scaled continuous features through three GELU-activated linear layers with dropout. 
 - Loss Function: Uses Focal Loss to focus learning on the minority class. 
-- Sampler: A weightedRandomSampler balances the training data by oversampling rare laundering examples. 
+- Sampler: A weightedRandomSampler balances the training data by oversampling rare laundering examples.
+
+<p float="left">
+  <img src="/Figures/transformer_diagram.jpg" width="500" />
+</p>
+<p align="left"><b>Figure 2. Overview of Transformer Model architecture.</b></p>
 
 <h4 id="Transformer-Preprocess">Preprocess</h4>
 
