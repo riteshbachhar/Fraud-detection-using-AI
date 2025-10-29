@@ -111,8 +111,8 @@ In addition, we engineered several domain‑specific features designed to captur
 - `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
 
 <p float="center">
-  <img src="/Figures/fanin.JPG" width="300" />
-  <img src="/Figures/fanout.JPG" width="300" />
+  <img src="/Figures/fanin.JPG" width="250" />
+  <img src="/Figures/fanout.JPG" width="250" />
   <img src="/Figures/circular_transaction.JPG" width="300" />
 </p>
 <p align="center"><b>Figure 1. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
@@ -141,7 +141,7 @@ Using the correlation matrix (see Figure 1), we identified and removed eight fea
 <p float="center">
   <img src="/Figures/corr_matrix.png" width="1000" />
 </p>
-<p align="center"><b>Figure 1. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+<p align="center"><b>Figure 2. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
 <h4 id="Baseline-Result">Result</h4>
 
@@ -167,10 +167,10 @@ Through multi-head self attention residual attention and shared embedding, the T
 - Loss Function: Uses Focal Loss to focus learning on the minority class. 
 - Sampler: A weightedRandomSampler balances the training data by oversampling rare laundering examples.
 
-<p float="left">
+<p float="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
-<p align="left"><b>Figure 2. Overview of Transformer Model architecture.</b></p>
+<p align="center"><b>Figure 3. Overview of Transformer Model architecture.</b></p>
 
 <h4 id="Transformer-Preprocess">Preprocess</h4>
 
