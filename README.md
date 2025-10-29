@@ -43,9 +43,17 @@ Define Problem: Money laundering is the process of conversion of illicit money w
 
 <h3 id="Introduction">Introduction</h3>
 
-Fraud and money laundering continue to burden financial institutions, with indirect costs far exceeding direct losses. In North America, each dollar lost to fraud cost firms $4.45 in 2023, factoring in investigation, recovery, and reputational harm. Meanwhile, Panama Papers and Swiss leaks spotlighted how offshore structures facilitate laundering, blending illicit funds with legitimate ones to obscure their origin. As schemes become more sophisticated, robust data-driven models are essential for timely detection and prevention.
+Fraud and money laundering continue to impose significant burdens on financial institutions, with indirect costs often far surpassing direct monetary losses. In North America alone, every dollar lost to fraud in 2023 translated into an average total cost of $4.45, once investigation, recovery efforts, and reputational damage were accounted for. High-profile exposés such as the Panama Papers and Swiss Leaks have further illuminated how offshore financial structures enable laundering by commingling illicit funds with legitimate assets, effectively obscuring their criminal origins.
 
-**Goal:** Build a deep learning model on SAML-D to detect suspicious financial transactions, reducing false positives while improving recall in anti-money laundering systems. We also want to try using OpenAI’a GPT to generate natural language explanations for each flagged transaction. And if time permits deploy to AWS (probably S3).
+As laundering schemes grow increasingly sophisticated, the need for robust, data-driven detection systems becomes more urgent. Timely identification and prevention now hinge on scalable models capable of parsing complex transaction patterns and adapting to evolving typologies.
+
+Money laundering typically unfolds in three stages: placement, layering, and integration (see Figure 1). While the placement and integration phases are often concealed and difficult to detect, the layering stage, characterized by a series of transactions between accounts, is more amenable to scrutiny. This phase presents a critical opportunity for intervention, as it involves the movement and transformation of funds designed to break the audit trail.
+
+In this project, our objective is to develop deep learning models using the SAML-D dataset to identify suspicious financial transactions. We aimed to reduce false positives while enhancing recall within anti-money laundering (AML) systems. Additionally, we explored the use of OpenAI's GPT to generate natural language explanations for each flagged transaction, improving interpretability for compliance teams. If time permits, we plan to deploy the solution to AWS, likely leveraging S3 for storage and scalability.
+
+<!-- Fraud and money laundering continue to burden financial institutions, with indirect costs far exceeding direct losses. In North America, each dollar lost to fraud cost firms $4.45 in 2023, factoring in investigation, recovery, and reputational harm. Meanwhile, Panama Papers and Swiss leaks spotlighted how offshore structures facilitate laundering, blending illicit funds with legitimate ones to obscure their origin. As schemes become more sophisticated, robust data-driven models are essential for timely detection and prevention.
+
+**Goal:** Build a deep learning model on SAML-D to detect suspicious financial transactions, reducing false positives while improving recall in anti-money laundering systems. We also want to try using OpenAI’a GPT to generate natural language explanations for each flagged transaction. And if time permits deploy to AWS (probably S3). -->
 
 <p float="center">
   <img src="/Figures/Money_Laundering_Cycle.png" width="900" />
@@ -106,7 +114,7 @@ This temporal splitting strategy serves two purposes:
 
 From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
 
-In addition, we engineered several domain‑specific features designed to capture structural and behavioral signals of anomalous activity:
+In addition, we engineered several domain‑specific features (see Figure 2) designed to capture structural and behavioral signals of anomalous activity:
 
 - `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
 - `fan_in_out_ratio`: The ratio of inbound to outbound counterparties over 30 days, highlighting imbalances in transactional relationships.
@@ -142,7 +150,7 @@ Parameters considered:
 
 <h4 id="Baseline-Preprocess">Preprocess</h4>
 
-Using the correlation matrix (see Figure 1), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
+Using the correlation matrix (see Figure 3), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
 
 <p float="center">
   <img src="/Figures/corr_mat.png" width="1000" />
@@ -150,6 +158,15 @@ Using the correlation matrix (see Figure 1), we identified and removed eight fea
 <p align="center"><b>Figure 3. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
 <h4 id="Baseline-Result">Result</h4>
+
+<p float="center">
+  <img src="/Figures/xgboost_shap_back_and_forth_transfers.png" width="450" />
+  <img src="/Figures/xgboost_shap_circular_transaction_count.png" width="450" />
+  <img src="/Figures/xgboost_shap_currency_mismatch.png" width="450" />
+  <img src="/Figures/xgboost_shap_high_risk_sender.png" width="450" />
+</p>
+
+**Figure 4. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
 
 
 ---
