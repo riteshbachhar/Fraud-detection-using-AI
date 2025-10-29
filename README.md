@@ -175,6 +175,7 @@ We trained the model and used a held‑out validation set to tune hyperparameter
 <p align="center"><b>Figure 4. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
 </b></p>
 
+We assessed feature importance using SHAP values (see Figure 5). The SHAP summary identified the strongest signals and their directions. The top six features contributing most to classification were `back_and_forth_transfers`, `fanin_30d`, `sent_to_received_ratio_monthly`, `fanin_intensity_ratio`, `Amount`, `circular_transaction_count`, and `currency_mismatch`. Other features had smaller SHAP contributions and do not materially influence classification relative to these variables. These results highlighted behavioral patterns to prioritize during feature engineering and threshold selection and warrant further investigation to confirm they align with domain expertise and are not artifacts of sampling or labeling.
 
 <p float="center">
   <img src="/Figures/xgboost_shap_summary.png" width="1000" />
