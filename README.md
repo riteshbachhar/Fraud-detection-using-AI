@@ -161,7 +161,7 @@ Using the correlation matrix (see Figure 3), we identified and removed eight fea
 
 <p float="center">
   <img src="/Figures/XGBoost_confusion_mat.png" width="370" />
-  <img src="/Figures/xgboost_pr_curve.png" width="500" />
+  <img src="/Figures/xgboost_pr_curve.png" width="450" />
 </p>
 <p align="center"><b>Figure 4. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
 </b></p>
