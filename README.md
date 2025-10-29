@@ -47,6 +47,12 @@ Fraud and money laundering continue to burden financial institutions, with indir
 
 **Goal:** Build a deep learning model on SAML-D to detect suspicious financial transactions, reducing false positives while improving recall in anti-money laundering systems. We also want to try using OpenAI’a GPT to generate natural language explanations for each flagged transaction. And if time permits deploy to AWS (probably S3).
 
+<p float="center">
+  <img src="/Figures/Money_Laundering_Cycle.png" width="900" />
+</p>
+<p align="center"><b>Figure 1. Three stages of Money Laundering Cycle.
+</b></p>
+
 ---
 
 <h3 id="Dataset">Dataset</h3>
@@ -115,7 +121,7 @@ In addition, we engineered several domain‑specific features designed to captur
   <img src="/Figures/fanout.JPG" width="250" />
   <img src="/Figures/circular_transaction.JPG" width="300" />
 </p>
-<p align="center"><b>Figure 1. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
+<p align="center"><b>Figure 2. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
 </b></p>
 
 
@@ -139,9 +145,9 @@ Parameters considered:
 Using the correlation matrix (see Figure 1), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
 
 <p float="center">
-  <img src="/Figures/corr_matrix.png" width="1000" />
+  <img src="/Figures/corr_mat.png" width="1000" />
 </p>
-<p align="center"><b>Figure 2. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+<p align="center"><b>Figure 3. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
 <h4 id="Baseline-Result">Result</h4>
 
@@ -170,7 +176,7 @@ Through multi-head self attention residual attention and shared embedding, the T
 <p float="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
-<p align="center"><b>Figure 3. Overview of Transformer Model architecture.</b></p>
+<p align="center"><b>Figure 4. Overview of Transformer Model architecture.</b></p>
 
 <h4 id="Transformer-Preprocess">Preprocess</h4>
 
@@ -217,13 +223,14 @@ We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, whic
 
 <h3 id="References">References</h3>
 <ul>
+<li>United Nations Office on Drugs and Crime. Money Laundering. United Nations, <a href=https://www.unodc.org/unodc/en/money-laundering/overview.html>https://www.unodc.org/unodc/en/money-laundering/overview.html</a>. Accessed 29 Oct. 2025.
+</li>
 <li>LexisNexis Risk Solutions. <a href=https://risk.lexisnexis.com/about-us/press-room/press-release/20240424-tcof-financial-services-lending>Every Dollar Lost to a Fraudster Costs North America's Financial Institutions $4.45</a>. LexisNexis Risk Solutions, 24 Apr. 2024.</li>
 <li>Grigorescu, Petre-Cornel, and Antoaneta Amza. "Explainable Feature Engineering for Multi-class Money Laundering Classification." Informatica Economică, vol. 29, no. 1, 2025, pp. 64–78, doi: 10.24818/issn14531305.</li>
 <li>B. Oztas, D. Cetinkaya, F. Adedoyin, M. Budka, H. Dogan and G. Aksu, "Enhancing Anti-Money Laundering: Development of a Synthetic Transaction Monitoring Dataset," 2023 IEEE International Conference on e-Business Engineering (ICEBE), Sydney, Australia, 2023, pp. 47-54, doi: 10.1109/ICEBE59045.2023.00028.</li>
 <li>Oztas, Berkan, et al. "Tab-AML: A Transformer Based Transaction Monitoring Model for Anti-Money Laundering." 2025 IEEE Conference on Artificial Intelligence (CAI). IEEE, 2025.</li>
 <li>Phan, T.T.T. (2025). Leveraging Graph Neural Networks and Optimization Algorithms to Enhance Anti-money Laundering Systems. In: Le Thi, H.A., Le, H.M., Nguyen, Q.T. (eds) Advances in Data Science and Optimization of Complex Systems. ICAMCS 2024. Lecture Notes in Networks and Systems, vol 1311. Springer.</li>
 </ul>
-
 
 ---
 
