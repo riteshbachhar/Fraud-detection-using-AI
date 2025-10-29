@@ -160,13 +160,27 @@ Using the correlation matrix (see Figure 3), we identified and removed eight fea
 <h4 id="Baseline-Result">Result</h4>
 
 <p float="center">
+  <img src="/Figures/XGBoost_confusion_mat.png" width="370" />
+  <img src="/Figures/xgboost_pr_curve.png" width="500" />
+</p>
+<p align="center"><b>Figure 4. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
+</b></p>
+
+
+<p float="center">
+  <img src="/Figures/xgboost_shap_summary.png" width="1000" />
+</p>
+<p align="center"><b>Figure 5. SHAP summary plot for the XGBoost model, showing the impact of each feature on model output. Each point represents a SHAP value for a single prediction. Color indicates the feature value (e.g., red = high, blue = low). Features are ranked by mean absolute SHAP value, highlighting their overall importance.</b></p>
+
+
+<p float="center">
   <img src="/Figures/xgboost_shap_back_and_forth_transfers.png" width="400" />
   <img src="/Figures/xgboost_shap_circular_transaction_count.png" width="400" />
   <img src="/Figures/xgboost_shap_currency_mismatch.png" width="400" />
   <img src="/Figures/xgboost_shap_high_risk_sender.png" width="400" />
 </p>
 
-**Figure 4. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
+**Figure 6. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
 
 
 ---
