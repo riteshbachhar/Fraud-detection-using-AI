@@ -110,6 +110,15 @@ In addition, we engineered several domain‑specific features designed to captur
 - `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
 - `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
 
+<p float="center">
+  <img src="/Figures/fanin.JPG" width="300" />
+  <img src="/Figures/fanout.JPG" width="300" />
+  <img src="/Figures/circular_transaction.JPG" width="300" />
+</p>
+<p align="center"><b>Figure 1. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
+</b></p>
+
+
 ---
 
 <h3 id="Baseline">Baseline Model: XGBoost</h3>
@@ -129,7 +138,7 @@ Parameters considered:
 
 Using the correlation matrix (see Figure 1), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
 
-<p float="left">
+<p float="center">
   <img src="/Figures/corr_matrix.png" width="1000" />
 </p>
 <p align="center"><b>Figure 1. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
