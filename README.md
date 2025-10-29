@@ -49,7 +49,7 @@ As laundering schemes grow increasingly sophisticated, the need for robust, data
 
 Money laundering typically unfolds in three stages: placement, layering, and integration (see Figure 1). While the placement and integration phases are often concealed and difficult to detect, the layering stage, characterized by a series of transactions between accounts, is more amenable to scrutiny. This phase presents a critical opportunity for intervention, as it involves the movement and transformation of funds designed to break the audit trail.
 
-In this project, our objective is to develop deep learning models using the SAML-D dataset to identify suspicious financial transactions. We aimed to reduce false positives while enhancing recall within anti-money laundering (AML) systems. Additionally, we explored the use of OpenAI's GPT to generate natural language explanations for each flagged transaction, improving interpretability for compliance teams. If time permits, we plan to deploy the solution to AWS, likely leveraging S3 for storage and scalability.
+In this project, our objective is to develop deep learning models using the SAML-D dataset to identify suspicious financial transactions. We aim to reduce false positives while enhancing recall within anti-money laundering (AML) systems. Additionally, we plan to explore the use of OpenAI's GPT to generate natural language explanations for each flagged transaction, improving interpretability for compliance teams. If time permits, we will deploy the solution to AWS, likely leveraging S3 for storage and scalability.
 
 <!-- Fraud and money laundering continue to burden financial institutions, with indirect costs far exceeding direct losses. In North America, each dollar lost to fraud cost firms $4.45 in 2023, factoring in investigation, recovery, and reputational harm. Meanwhile, Panama Papers and Swiss leaks spotlighted how offshore structures facilitate laundering, blending illicit funds with legitimate ones to obscure their origin. As schemes become more sophisticated, robust data-driven models are essential for timely detection and prevention.
 
@@ -81,7 +81,6 @@ The dataset includes the following 12 features:
 - `Payment_type`: Type of payment, such as credit card, debit card, cash, etc.
 - `Is_laundering`: Target variable indicating whether the transaction is laundering (`1`) or not (`0`)
 - `Laundering_type`: A categorical feature that includes 28 laundering typologies, derived from literature and semi-structured interviews with AML specialists.
-
 
 ---
 
@@ -157,6 +156,16 @@ Using the correlation matrix (see Figure 3), we identified and removed eight fea
 </p>
 <p align="center"><b>Figure 3. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
+We trained the model and used a held‑out validation set to tune hyperparameters. We performed a grid search over `max_depth`, `learning_rate`, and `sub_sample` to identify the best-performing configurations.
+
+**Metrics and rationale:** We selected precision, recall, and F1 score as our primary success metrics because the data were highly imbalanced, with only 0.1% of records in the positive class. We prioritized metrics that reflect ranking quality and the tradeoff between false positives and false negatives rather than overall accuracy. Top five hyperparameter combinations were selected by highest validation F1; precision, recall, and training time for these configurations were reported in Table 1 to illustrate tradeoffs between model performance and computational cost.
+
+**Operational considerations:** We also accounted for training time and GPU resource usage given the dataset size. We used early stopping on the validation metric, recorded wall time for each configuration, and favored hyperparameter combinations that delivered meaningful metric improvements relative to their computational cost.
+
+<p float="center">
+  <img src="/Figures/xgboost_hypertuning.JPG" width="800" />
+</p>
+
 <h4 id="Baseline-Result">Result</h4>
 
 <p float="center">
@@ -207,7 +216,7 @@ Through multi-head self attention residual attention and shared embedding, the T
 <p float="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
-<p align="center"><b>Figure 4. Overview of Transformer Model architecture.</b></p>
+<p align="center"><b>Figure 7. Overview of Transformer Model architecture.</b></p>
 
 <h4 id="Transformer-Preprocess">Preprocess</h4>
 
