@@ -16,12 +16,24 @@ Define Problem: Money laundering is the process of conversion of illicit money w
             <li><a href="#Recasting">Memory Optimization via Integer Recasting</a></li>
             <li><a href="#Train-Test-split">Custom Train-test split</a></li>
         </ul>
-    <li><a href="Features">Time‑Based and Graph‑Inspired Feature Engineering</a></li>
-    <li><a href="#Models">Models</a></li>
+    <li><a href="#Features">Time‑Based and Graph‑Inspired Feature Engineering</a></li>
+    <li><a href="#Baseline">Baseline Model: XGBoost</a></li>
         <ul>
-            <li><a href="#Baseline">1. Baseline Model: XGBoost</a></li>
-            <li><a href="#Transformer">2. Transformer</a></li>
-            <li><a href="#GCN">3. Graph Neural Network</a></li>
+            <li><a href="#Baseline-Architecture">Architecture</a></li>
+            <li><a href="#Baseline-Preprocess">Preprocess</a></li>
+            <li><a href="#Baseline-Result">Result</a></li>
+        </ul>
+    <li><a href="#Transformer">Transformer</a></li>
+        <ul>
+            <li><a href="#Transformer-Architecture">Architecture</a></li>
+            <li><a href="#Transformer-Preprocess">Preprocess</a></li>
+            <li><a href="#Transformer-Result">Result</a></li>
+        </ul>
+    <li><a href="#GNN">Graph Neural Network</a></li>
+        <ul>
+            <li><a href="#GNN-Architecture">Architecture</a></li>
+            <li><a href="#GNN-Preprocess">Preprocess</a></li>
+            <li><a href="#GNN-Result">Result</a></li>
         </ul>
     <li><a href="#References">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
@@ -31,9 +43,23 @@ Define Problem: Money laundering is the process of conversion of illicit money w
 
 <h3 id="Introduction">Introduction</h3>
 
-Fraud and money laundering continue to burden financial institutions, with indirect costs far exceeding direct losses. In North America, each dollar lost to fraud cost firms $4.45 in 2023, factoring in investigation, recovery, and reputational harm. Meanwhile, Panama Papers and Swiss leaks spotlighted how offshore structures facilitate laundering, blending illicit funds with legitimate ones to obscure their origin. As schemes become more sophisticated, robust data-driven models are essential for timely detection and prevention.
+Fraud and money laundering continue to impose significant burdens on financial institutions, with indirect costs often far surpassing direct monetary losses. In North America alone, every dollar lost to fraud in 2023 translated into an average total cost of $4.45, once investigation, recovery efforts, and reputational damage were accounted for. High-profile exposés such as the Panama Papers and Swiss Leaks have further illuminated how offshore financial structures enable laundering by commingling illicit funds with legitimate assets, effectively obscuring their criminal origins.
 
-**Goal:** Build a deep learning model on SAML-D to detect suspicious financial transactions, reducing false positives while improving recall in anti-money laundering systems. We also want to try using OpenAI’a GPT to generate natural language explanations for each flagged transaction. And if time permits deploy to AWS (probably S3).
+As laundering schemes grow increasingly sophisticated, the need for robust, data-driven detection systems becomes more urgent. Timely identification and prevention now hinge on scalable models capable of parsing complex transaction patterns and adapting to evolving typologies.
+
+Money laundering typically unfolds in three stages: placement, layering, and integration (see Figure 1). While the placement and integration phases are often concealed and difficult to detect, the layering stage, characterized by a series of transactions between accounts, is more amenable to scrutiny. This phase presents a critical opportunity for intervention, as it involves the movement and transformation of funds designed to break the audit trail.
+
+In this project, our objective is to develop deep learning models using the SAML-D dataset to identify suspicious financial transactions. We aim to reduce false positives while enhancing recall within anti-money laundering (AML) systems. Additionally, we plan to explore the use of OpenAI's GPT to generate natural language explanations for each flagged transaction, improving interpretability for compliance teams. If time permits, we will deploy the solution to AWS, likely leveraging S3 for storage and scalability.
+
+<!-- Fraud and money laundering continue to burden financial institutions, with indirect costs far exceeding direct losses. In North America, each dollar lost to fraud cost firms $4.45 in 2023, factoring in investigation, recovery, and reputational harm. Meanwhile, Panama Papers and Swiss leaks spotlighted how offshore structures facilitate laundering, blending illicit funds with legitimate ones to obscure their origin. As schemes become more sophisticated, robust data-driven models are essential for timely detection and prevention.
+
+**Goal:** Build a deep learning model on SAML-D to detect suspicious financial transactions, reducing false positives while improving recall in anti-money laundering systems. We also want to try using OpenAI’a GPT to generate natural language explanations for each flagged transaction. And if time permits deploy to AWS (probably S3). -->
+
+<p float="center">
+  <img src="/Figures/Money_Laundering_Cycle.png" width="900" />
+</p>
+<p align="center"><b>Figure 1. Three stages of Money Laundering Cycle.
+</b></p>
 
 ---
 
@@ -55,7 +81,6 @@ The dataset includes the following 12 features:
 - `Payment_type`: Type of payment, such as credit card, debit card, cash, etc.
 - `Is_laundering`: Target variable indicating whether the transaction is laundering (`1`) or not (`0`)
 - `Laundering_type`: A categorical feature that includes 28 laundering typologies, derived from literature and semi-structured interviews with AML specialists.
-
 
 ---
 
@@ -88,7 +113,7 @@ This temporal splitting strategy serves two purposes:
 
 From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
 
-In addition, we engineered several domain‑specific features designed to capture structural and behavioral signals of anomalous activity:
+In addition, we engineered several domain‑specific features (see Figure 2) designed to capture structural and behavioral signals of anomalous activity:
 
 - `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
 - `fan_in_out_ratio`: The ratio of inbound to outbound counterparties over 30 days, highlighting imbalances in transactional relationships.
@@ -98,18 +123,20 @@ In addition, we engineered several domain‑specific features designed to captur
 - `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
 - `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
 
-Using the correlation matrix (see Figure 1), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
-
-<p float="left">
-  <img src="/Figures/corr_matrix.png" width="1000" />
+<p float="center">
+  <img src="/Figures/fanin.JPG" width="250" />
+  <img src="/Figures/fanout.JPG" width="250" />
+  <img src="/Figures/circular_transaction.JPG" width="300" />
 </p>
-<p align="center"><b>Figure 1. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+<p align="center"><b>Figure 2. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
+</b></p>
+
 
 ---
 
-<h3 id="Models">Models</h3>
+<h3 id="Baseline">Baseline Model: XGBoost</h3>
 
-<h4 id="Baseline">1. Baseline Model: XGBoost</h4>
+<h4 id="Baseline-Architecture">Architecture</h4>
 
 We selected XGBoost as our baseline for its resistance to overfitting: its tree‑based architecture handles outliers well, and built‑in regularization and shrinkage mitigate overfitting on noisy transactional data.
 
@@ -120,7 +147,67 @@ Parameters considered:
 - `learning_rate`: 0.1, 0.05, 0.01
 - `subsample`: 0.3, 0.5, 1
 
-<h4 id="Transformer">2. Transformer</h4>
+<h4 id="Baseline-Preprocess">Preprocess</h4>
+
+Using the correlation matrix (see Figure 3), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
+
+<p float="center">
+  <img src="/Figures/corr_mat.png" width="1000" />
+</p>
+<p align="center"><b>Figure 3. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+
+We trained the model and used a held‑out validation set to tune hyperparameters. We performed a grid search over `max_depth`, `learning_rate`, and `subsample` to identify the best-performing configurations.
+
+**Metrics and rationale:** We selected precision, recall, and F1 score as our primary success metrics because the data were highly imbalanced, with only 0.1% of records in the positive class. We prioritized metrics that reflect ranking quality and the tradeoff between false positives and false negatives rather than overall accuracy. Top five hyperparameter combinations were selected by highest validation F1; precision, recall, and training time for these configurations were reported in Table 1 to illustrate tradeoffs between model performance and computational cost.
+
+**Operational considerations:** We also accounted for training time and GPU resource usage given the dataset size. We used early stopping on the validation metric, recorded wall time for each configuration, and favored hyperparameter combinations that delivered meaningful metric improvements relative to their computational cost.
+
+<p float="center">
+  <img src="/Figures/xgboost_hypertuning.JPG" width="800" />
+</p>
+
+<h4 id="Baseline-Result">Result</h4>
+
+We trained an XGBoost model on the combined training and validation sets, selecting hyperparameters that yielded the highest F1 score during validation: `max_depth` = 10, `learning_rate` = 0.01, and `subsample` = 1. 
+
+The resulting model achieved a high precision of 0.887, indicating that the majority of flagged transactions were indeed suspicious, an encouraging outcome for reducing false positives and minimizing unnecessary compliance reviews. However, recall remained relatively low at 0.413, suggesting that the model failed to identify a significant portion of true suspicious cases. This trade-off reflects a common challenge in anti-money laundering systems, where precision is often favored to avoid overwhelming investigators, but at the cost of missing subtle or novel laundering behaviors.
+The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics are visualized in Figure 4, which presents the confusion matrix (left) and the precision–recall curve (right).
+
+<p float="center">
+  <img src="/Figures/XGBoost_confusion_mat.png" width="350" />
+  <img src="/Figures/xgboost_pr_curve.png" width="450" />
+</p>
+<p align="center"><b>Figure 4. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
+</b></p>
+
+We assessed feature importance using SHAP values (see Figure 5). The SHAP summary identified the strongest signals and their directions. The top six features contributing most to classification were `back_and_forth_transfers`, `fanin_30d`, `sent_to_received_ratio_monthly`, `fanin_intensity_ratio`, `Amount`, `circular_transaction_count`, and `currency_mismatch`. Other features had smaller SHAP contributions and do not materially influence classification relative to these variables. These results highlighted behavioral patterns to prioritize during feature engineering and threshold selection and warrant further investigation to confirm they align with domain expertise and are not artifacts of sampling or labeling.
+
+<p float="center">
+  <img src="/Figures/xgboost_shap_summary.png" width="1000" />
+</p>
+<p align="center"><b>Figure 5. SHAP summary plot for the XGBoost model, showing the impact of each feature on model output. Each point represents a SHAP value for a single prediction. Color indicates the feature value (e.g., red = high, blue = low). Features are ranked by mean absolute SHAP value, highlighting their overall importance.</b></p>
+
+We also visualized SHAP values for four key features: `back_and_forth_transfers`, `circular_transaction_count`, `currency_mismatch`, and `high_risk_sender` (see Figure 6). In each plot, color intensity represented the logarithmic scale of transaction amounts, helping contextualize feature impact across varying transaction sizes.
+
+The feature `back_and_forth_transfers` captured the number of transfers between the same sender and receiver within a single day. We observed that low values (1 or 2 transfers) were associated with positive SHAP values, indicating the model leaned toward predicting class `1`, i.e. suspicious or laundering-related activity. In contrast, values of 3 or more were linked to negative SHAP values, suggesting the model interpreted these as normal transactions. This pattern may reflect the model's sensitivity to unusually short, reciprocal transfer chains.
+
+Interestingly, `circular_transaction_count` = 1 strongly corresponded to negative SHAP values, reinforcing the model's confidence in classifying such transactions as normal. However, higher counts did not consistently yield positive SHAP values, indicating that this feature alone may not be a strong predictor of laundering behavior without additional context.
+
+Both `currency_mismatch` and `high_risk_sender` exhibited consistently positive SHAP values across the dataset, suggesting that their presence reliably increased the model's likelihood of flagging a transaction as suspicious. These features likely captured regulatory red flags—such as inconsistent currency flows or involvement of known high-risk entities—that contribute meaningfully to the model's decision-making.
+
+<p float="center">
+  <img src="/Figures/xgboost_shap_back_and_forth_transfers.png" width="400" />
+  <img src="/Figures/xgboost_shap_circular_transaction_count.png" width="400" />
+  <img src="/Figures/xgboost_shap_currency_mismatch.png" width="400" />
+  <img src="/Figures/xgboost_shap_high_risk_sender.png" width="400" />
+</p>
+
+**Figure 6. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
+
+
+---
+
+<h3 id="Transformer">Transformer</h3>
 
 The transformer was selected as one of the deep learning models, drawing inspiration from the Tab-AML Tranformer in "Tab-AML: A Transformer Based Transaction Monitoring Model for Anti-Money Laundering." This choice was motivated by the Transformer's strong ability to capture complex relationships among categorical and numerical features in financial data. 
 
@@ -130,7 +217,33 @@ Each Categorical feature is first transformed into a learned embedding vector. T
 
 Through multi-head self attention residual attention and shared embedding, the Transformer captures complex relationships among transaction features. Residual attention ensure that previously learned information is preserved through multiple layers, enabling the model to understand complex financial behaviors at differnt levels of detail. Thus, it is suitable for detecting indirect money laundering activities.
 
-<h4 id="GCN">3. Graph Neural Network</h4>
+<h4 id="Transformer-Architecture">Architecture</h4>
+
+- Categorical Features: Each feature is embedded into a vector split into shared and individual components.
+- Micro Attention Encoder: Learns relationships between selected key features (sender and receiver account).
+- Macro Attention Encoder: Aggregates contextual information across all categorical features. 
+- MLP: Combines flattened Transformer output and scaled continuous features through three GELU-activated linear layers with dropout. 
+- Loss Function: Uses Focal Loss to focus learning on the minority class. 
+- Sampler: A weightedRandomSampler balances the training data by oversampling rare laundering examples.
+
+<p float="center">
+  <img src="/Figures/transformer_diagram.jpg" width="500" />
+</p>
+<p align="center"><b>Figure 7. Overview of Transformer Model architecture.</b></p>
+
+<h4 id="Transformer-Preprocess">Preprocess</h4>
+
+- Dates and times are merged into a unified timestamp, and temporal features (day, month, year, hour, weekday, weekend) are derived. 
+- The amount feature is log-transformed to stabilize variance. 
+- High-cardinality categorical columns (Sender_account, Receiver_account) are hashed into 50,000 buckets for efficient embedding. 
+- Continuous features are standardized using StandardScaler. 
+
+<h4 id="Transformer-Result">Result</h4>
+
+
+---
+
+<h3 id="GNN">Graph Neural Network</h3>
 
 Traditional rule-based methods have proven inadequate for detecting the sophisticated money laundering patterns prevalent in today's financial system. Recent work has demonstrated that Graph Neural Networks can effectively learn from graph-structured data, achieving substantial improvements in financial fraud detection. Building on these advances, our objective is to develop a Graph Neural Network model that detects money laundering activities with greater than 85% recall while maintaining operational precision, leveraging the explicit network structures embedded in the SAML-D dataset.
 
@@ -144,18 +257,33 @@ Traditional rule-based methods have proven inadequate for detecting the sophisti
 We propose to construct a transaction graph where each account represents a node and each transaction forms a directed edge between accounts. Node features capture aggregate account characteristics, including transaction statistics, network metrics, behavioral patterns, and temporal statistics. Edge features encode transaction-specific attributes such as amount, inter-arrival time, geographic properties, and payment type.
 
 We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, which enables scalable neighborhood sampling and aggregation for efficient learning on large graphs, and **(2) Graph Attention Networks~(GAT)**, which learn adaptive attention weights over neighbors to identify the most relevant connections for risk assessment and provide interpretability for regulatory compliance.
- 
+
+<h4 id="GNN-Architecture">Architecture</h4>
+
+- GRUCell: The GRUCell layer updates node hidden states by integrating current node features with previous temporal information, capturing sequential dependencies in transaction data.
+- GATConv (GNN1): The first GATConv layer aggregates neighbor information using attention mechanisms, refining node representations based on relevant sender-receiver relationships.
+- GATConv (GNN1): The second GATConv layer further enhances node features through additional message passing, deepening the model's ability to detect complex laundering patterns.
+- Linear (lin): The linear layer combines concatenated sender, receiver, and edge features to produce a single logit for binary edge classification, determining the likelihood of laundering.
+
+<h4 id="GNN-Preprocess">Preprocess</h4>
+
+- We aggregate the dataset into seven-day intervals to capture temporal network dynamics and structural patterns, reducing computational overhead during graph-based processing. For each interval, we compute account-level statistics, including transaction frequency, fan-in/fan-out degrees, and median transaction amounts. Transaction amounts are log-transformed to mitigate skewness and enhance the applicability of deep learning models for detecting complex laundering typologies.
+- Edges are constructed based on sender-receiver pairs, incorporating edge attributes like log-transformed amounts, currency mismatch indicators, cross-border flags, and day of week to enrich the relational context.
+
+<h4 id="GNN-Result">Result</h4>
+
 ---
 
 <h3 id="References">References</h3>
 <ul>
+<li>United Nations Office on Drugs and Crime. Money Laundering. United Nations, <a href=https://www.unodc.org/unodc/en/money-laundering/overview.html>https://www.unodc.org/unodc/en/money-laundering/overview.html</a>. Accessed 29 Oct. 2025.
+</li>
 <li>LexisNexis Risk Solutions. <a href=https://risk.lexisnexis.com/about-us/press-room/press-release/20240424-tcof-financial-services-lending>Every Dollar Lost to a Fraudster Costs North America's Financial Institutions $4.45</a>. LexisNexis Risk Solutions, 24 Apr. 2024.</li>
 <li>Grigorescu, Petre-Cornel, and Antoaneta Amza. "Explainable Feature Engineering for Multi-class Money Laundering Classification." Informatica Economică, vol. 29, no. 1, 2025, pp. 64–78, doi: 10.24818/issn14531305.</li>
 <li>B. Oztas, D. Cetinkaya, F. Adedoyin, M. Budka, H. Dogan and G. Aksu, "Enhancing Anti-Money Laundering: Development of a Synthetic Transaction Monitoring Dataset," 2023 IEEE International Conference on e-Business Engineering (ICEBE), Sydney, Australia, 2023, pp. 47-54, doi: 10.1109/ICEBE59045.2023.00028.</li>
 <li>Oztas, Berkan, et al. "Tab-AML: A Transformer Based Transaction Monitoring Model for Anti-Money Laundering." 2025 IEEE Conference on Artificial Intelligence (CAI). IEEE, 2025.</li>
 <li>Phan, T.T.T. (2025). Leveraging Graph Neural Networks and Optimization Algorithms to Enhance Anti-money Laundering Systems. In: Le Thi, H.A., Le, H.M., Nguyen, Q.T. (eds) Advances in Data Science and Optimization of Complex Systems. ICAMCS 2024. Lecture Notes in Networks and Systems, vol 1311. Springer.</li>
 </ul>
-
 
 ---
 
