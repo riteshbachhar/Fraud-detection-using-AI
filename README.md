@@ -156,7 +156,7 @@ Using the correlation matrix (see Figure 3), we identified and removed eight fea
 </p>
 <p align="center"><b>Figure 3. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
-We trained the model and used a held‑out validation set to tune hyperparameters. We performed a grid search over `max_depth`, `learning_rate`, and `sub_sample` to identify the best-performing configurations.
+We trained the model and used a held‑out validation set to tune hyperparameters. We performed a grid search over `max_depth`, `learning_rate`, and `subsample` to identify the best-performing configurations.
 
 **Metrics and rationale:** We selected precision, recall, and F1 score as our primary success metrics because the data were highly imbalanced, with only 0.1% of records in the positive class. We prioritized metrics that reflect ranking quality and the tradeoff between false positives and false negatives rather than overall accuracy. Top five hyperparameter combinations were selected by highest validation F1; precision, recall, and training time for these configurations were reported in Table 1 to illustrate tradeoffs between model performance and computational cost.
 
@@ -167,6 +167,11 @@ We trained the model and used a held‑out validation set to tune hyperparameter
 </p>
 
 <h4 id="Baseline-Result">Result</h4>
+
+We trained an XGBoost model on the combined training and validation sets, selecting hyperparameters that yielded the highest F1 score during validation: `max_depth` = 10, `learning_rate` = 0.01, and `subsample` = 1. 
+
+The resulting model achieved a high precision of 0.887, indicating that the majority of flagged transactions were indeed suspicious, an encouraging outcome for reducing false positives and minimizing unnecessary compliance reviews. However, recall remained relatively low at 0.413, suggesting that the model failed to identify a significant portion of true suspicious cases. This trade-off reflects a common challenge in anti-money laundering systems, where precision is often favored to avoid overwhelming investigators, but at the cost of missing subtle or novel laundering behaviors.
+The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics are visualized in Figure 4, which presents the confusion matrix (left) and the precision–recall curve (right).
 
 <p float="center">
   <img src="/Figures/XGBoost_confusion_mat.png" width="350" />
@@ -182,6 +187,13 @@ We assessed feature importance using SHAP values (see Figure 5). The SHAP summar
 </p>
 <p align="center"><b>Figure 5. SHAP summary plot for the XGBoost model, showing the impact of each feature on model output. Each point represents a SHAP value for a single prediction. Color indicates the feature value (e.g., red = high, blue = low). Features are ranked by mean absolute SHAP value, highlighting their overall importance.</b></p>
 
+We also visualized SHAP values for four key features: `back_and_forth_transfers`, `circular_transaction_count`, `currency_mismatch`, and `high_risk_sender` (see Figure 6). In each plot, color intensity represented the logarithmic scale of transaction amounts, helping contextualize feature impact across varying transaction sizes.
+
+The feature `back_and_forth_transfers` captured the number of transfers between the same sender and receiver within a single day. We observed that low values (1 or 2 transfers) were associated with positive SHAP values, indicating the model leaned toward predicting class `1`, i.e. suspicious or laundering-related activity. In contrast, values of 3 or more were linked to negative SHAP values, suggesting the model interpreted these as normal transactions. This pattern may reflect the model's sensitivity to unusually short, reciprocal transfer chains.
+
+Interestingly, `circular_transaction_count` = 1 strongly corresponded to negative SHAP values, reinforcing the model's confidence in classifying such transactions as normal. However, higher counts did not consistently yield positive SHAP values, indicating that this feature alone may not be a strong predictor of laundering behavior without additional context.
+
+Both `currency_mismatch` and `high_risk_sender` exhibited consistently positive SHAP values across the dataset, suggesting that their presence reliably increased the model's likelihood of flagging a transaction as suspicious. These features likely captured regulatory red flags—such as inconsistent currency flows or involvement of known high-risk entities—that contribute meaningfully to the model's decision-making.
 
 <p float="center">
   <img src="/Figures/xgboost_shap_back_and_forth_transfers.png" width="400" />
