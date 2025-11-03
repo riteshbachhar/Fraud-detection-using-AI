@@ -67,6 +67,11 @@ In this project, our objective is to develop deep learning models using the SAML
 
 The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-monitoring-dataset-aml/data">SAML-D dataset</a> is a synthetic dataset of 9.5 million transactions, developed using insights from AML specialists through semi-structured interviews, analysis of existing datasets, and a comprehensive literature review. The dataset includes 28 typologies, 11 normal and 17 suspicious, modelled to reflect real-world senarios, with overlapping behaviours between normaal and suspicious transactions to increase complexity and challenge detection efforts. The dataset includes 676,912 unique accounts conducting transactions across 18 geographic locations, using 13 currencies and 7 payment methods. Among these, 0.104% of the transactions (9,873 entires) are labeled as suspicious representing various money laundering techniques such as layering, rapid fund movement, and transactions to high risk locations.
 
+<p float="center">
+  <img src="/Figures/imbalanced_class.png" width="450" />
+<p align="center"><b>Figure 2. The data is highly imbalanced, with only 0.1% of transactions labeled as suspicious.
+</b></p>
+
 The dataset includes the following 12 features:
 
 - `Time`: Time of transaction, formatted as HH:MM:ss
@@ -85,31 +90,31 @@ The dataset includes the following 12 features:
 <h4 id="EDA">Exploratory Data Analysis</h4>
 
 <p float="center">
-  <img src="/Figures/laundering_type.png" width="450" />
-  <img src="/Figures/amount_by_laundering_type.png" width="450" />
+  <img src="/Figures/laundering_type.png" width="400" />
+  <img src="/Figures/amount_by_laundering_type.png" width="400" />
 </p>
-<p align="center"><b>Figure 2. Laundering types (left) and median log-transformed transaction amounts by type (right).
+<p align="center"><b>Figure 3. Laundering types (left) and median log-transformed transaction amounts by type (right).
 </b></p>
 
 <p float="center">
-  <img src="/Figures/top_receiver_locations.png" width="450" />
-  <img src="/Figures/top_sender_locations.png" width="450" />
+  <img src="/Figures/top_receiver_locations.png" width="400" />
+  <img src="/Figures/top_sender_locations.png" width="400" />
 </p>
-<p align="center"><b>Figure 3. Histograms of receiver bank locations (left) and sender bank locations (right).
+<p align="center"><b>Figure 4. Histograms of receiver bank locations (left) and sender bank locations (right).
 </b></p>
 
 <p float="center">
-  <img src="/Figures/top_20_money_transfer.png" width="450" />
-  <img src="/Figures/top_20_currency_pairs.png" width="450" />
+  <img src="/Figures/top_20_money_transfer.png" width="400" />
+  <img src="/Figures/top_20_currency_pairs.png" width="400" />
 </p>
-<p align="center"><b>Figure 4. op 20 money transfer routes (left) and currency pairs (right).
+<p align="center"><b>Figure 5. Top 20 money transfer routes (left) and currency pairs (right).
 </b></p>
 
 <h4 id="Features">Time‑Based and Graph‑Inspired Feature Engineering</h4>
 
 From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
 
-In addition, we engineered several domain‑specific features (see Figure 5) designed to capture structural and behavioral signals of anomalous activity:
+In addition, we engineered several domain‑specific features (see Figure 6) designed to capture structural and behavioral signals of anomalous activity:
 
 - `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
 - `fan_in_out_ratio`: The ratio of inbound to outbound counterparties over 30 days, highlighting imbalances in transactional relationships.
@@ -124,7 +129,7 @@ In addition, we engineered several domain‑specific features (see Figure 5) des
   <img src="/Figures/fanout.JPG" width="250" />
   <img src="/Figures/circular_transaction.JPG" width="300" />
 </p>
-<p align="center"><b>Figure 5. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
+<p align="center"><b>Figure 6. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
 </b></p>
 
 <h4 id="Recasting">Memory Optimization via Integer Recasting</h4>
@@ -166,12 +171,12 @@ Parameters considered:
 
 <h4 id="Baseline-Preprocess">Preprocess</h4>
 
-Using the correlation matrix (see Figure 6), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
+Using the correlation matrix (see Figure 7), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
 
 <p float="center">
   <img src="/Figures/corr_mat.png" width="1000" />
 </p>
-<p align="center"><b>Figure 6. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+<p align="center"><b>Figure 7. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
 We trained the model and used a held‑out validation set to tune hyperparameters. We performed a grid search over `max_depth`, `learning_rate`, and `subsample` to identify the best-performing configurations.
 
@@ -188,23 +193,23 @@ We trained the model and used a held‑out validation set to tune hyperparameter
 We trained an XGBoost model on the combined training and validation sets, selecting hyperparameters that yielded the highest F1 score during validation: `max_depth` = 10, `learning_rate` = 0.01, and `subsample` = 1. 
 
 The resulting model achieved a high precision of 0.887, indicating that the majority of flagged transactions were indeed suspicious, an encouraging outcome for reducing false positives and minimizing unnecessary compliance reviews. However, recall remained relatively low at 0.413, suggesting that the model failed to identify a significant portion of true suspicious cases. This trade-off reflects a common challenge in anti-money laundering systems, where precision is often favored to avoid overwhelming investigators, but at the cost of missing subtle or novel laundering behaviors.
-The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics are visualized in Figure 7, which presents the confusion matrix (left) and the precision–recall curve (right).
+The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics are visualized in Figure 8, which presents the confusion matrix (left) and the precision–recall curve (right).
 
 <p float="center">
   <img src="/Figures/XGBoost_confusion_mat.png" width="350" />
   <img src="/Figures/xgboost_pr_curve.png" width="450" />
 </p>
-<p align="center"><b>Figure 7. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
+<p align="center"><b>Figure 8. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
 </b></p>
 
-We assessed feature importance using SHAP values (see Figure 5). The SHAP summary identified the strongest signals and their directions. The top six features contributing most to classification were `back_and_forth_transfers`, `fanin_30d`, `sent_to_received_ratio_monthly`, `fanin_intensity_ratio`, `Amount`, `circular_transaction_count`, and `currency_mismatch`. Other features had smaller SHAP contributions and do not materially influence classification relative to these variables. These results highlighted behavioral patterns to prioritize during feature engineering and threshold selection and warrant further investigation to confirm they align with domain expertise and are not artifacts of sampling or labeling.
+We assessed feature importance using SHAP values (see Figure 9). The SHAP summary identified the strongest signals and their directions. The top six features contributing most to classification were `back_and_forth_transfers`, `fanin_30d`, `sent_to_received_ratio_monthly`, `fanin_intensity_ratio`, `Amount`, `circular_transaction_count`, and `currency_mismatch`. Other features had smaller SHAP contributions and do not materially influence classification relative to these variables. These results highlighted behavioral patterns to prioritize during feature engineering and threshold selection and warrant further investigation to confirm they align with domain expertise and are not artifacts of sampling or labeling.
 
 <p float="center">
   <img src="/Figures/xgboost_shap_summary.png" width="1000" />
 </p>
-<p align="center"><b>Figure 8. SHAP summary plot for the XGBoost model, showing the impact of each feature on model output. Each point represents a SHAP value for a single prediction. Color indicates the feature value (e.g., red = high, blue = low). Features are ranked by mean absolute SHAP value, highlighting their overall importance.</b></p>
+<p align="center"><b>Figure 9. SHAP summary plot for the XGBoost model, showing the impact of each feature on model output. Each point represents a SHAP value for a single prediction. Color indicates the feature value (e.g., red = high, blue = low). Features are ranked by mean absolute SHAP value, highlighting their overall importance.</b></p>
 
-We also visualized SHAP values for four key features: `back_and_forth_transfers`, `circular_transaction_count`, `currency_mismatch`, and `high_risk_sender` (see Figure 9). In each plot, color intensity represented the logarithmic scale of transaction amounts, helping contextualize feature impact across varying transaction sizes.
+We also visualized SHAP values for four key features: `back_and_forth_transfers`, `circular_transaction_count`, `currency_mismatch`, and `high_risk_sender` (see Figure 10). In each plot, color intensity represented the logarithmic scale of transaction amounts, helping contextualize feature impact across varying transaction sizes.
 
 The feature `back_and_forth_transfers` captured the number of transfers between the same sender and receiver within a single day. We observed that low values (1 or 2 transfers) were associated with positive SHAP values, indicating the model leaned toward predicting class `1`, i.e. suspicious or laundering-related activity. In contrast, values of 3 or more were linked to negative SHAP values, suggesting the model interpreted these as normal transactions. This pattern may reflect the model's sensitivity to unusually short, reciprocal transfer chains.
 
@@ -219,7 +224,7 @@ Both `currency_mismatch` and `high_risk_sender` exhibited consistently positive 
   <img src="/Figures/xgboost_shap_high_risk_sender.png" width="400" />
 </p>
 
-**Figure 9. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
+**Figure 10. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
 
 ---
 
@@ -245,7 +250,7 @@ Through multi-head self attention residual attention and shared embedding, the T
 <p float="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
-<p align="center"><b>Figure 10. Overview of Transformer Model architecture.</b></p>
+<p align="center"><b>Figure 11. Overview of Transformer Model architecture.</b></p>
 
 <h4 id="Transformer-Preprocess">Preprocess</h4>
 
