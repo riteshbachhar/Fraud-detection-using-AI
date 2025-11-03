@@ -10,13 +10,13 @@ Define Problem: Money laundering is the process of conversion of illicit money w
 
 <ul>
     <li><a href="#Introduction">Introduction</a></li>
-    <li><a href="#Dataset">Dataset</a></li>
-    <li><a href="#Preprocessing">Preprocessing</a></li>
+    <li><a href="#Dataset">Dataset Overview</a></li>
         <ul>
+            <li><a href="#EDA">Exploratory Data Analysis</a></li>
+            <li><a href="#Features">Time‑Based and Graph‑Inspired Feature Engineering</a></li>
             <li><a href="#Recasting">Memory Optimization via Integer Recasting</a></li>
             <li><a href="#Train-Test-split">Custom Train-test split</a></li>
         </ul>
-    <li><a href="#Features">Time‑Based and Graph‑Inspired Feature Engineering</a></li>
     <li><a href="#Baseline">Baseline Model: XGBoost</a></li>
         <ul>
             <li><a href="#Baseline-Architecture">Architecture</a></li>
@@ -47,7 +47,7 @@ Fraud and money laundering continue to impose significant burdens on financial i
 
 As laundering schemes grow increasingly sophisticated, the need for robust, data-driven detection systems becomes more urgent. Timely identification and prevention now hinge on scalable models capable of parsing complex transaction patterns and adapting to evolving typologies.
 
-Money laundering typically unfolds in three stages: placement, layering, and integration (see Figure 1). While the placement and integration phases are often concealed and difficult to detect, the layering stage, characterized by a series of transactions between accounts, is more amenable to scrutiny. This phase presents a critical opportunity for intervention, as it involves the movement and transformation of funds designed to break the audit trail.
+Money laundering typically unfolds in three stages: placement, layering, and integration (see Figure 1). While the placement and integration phases are often concealed and difficult to detect, the layering stage, characterized by a series of transactions between accounts, is more amenable to scrutiny. This phase presents a critical opportunity for intervention, as it involves the movement and transformation of funds designed to break the audit trail. With global laundering estimated at 2–5% of GDP ($800B–$2T), the stakes are high. High-recall detection is not merely desirable—it is essential for identifying suspicious patterns early, minimizing false negatives, and enabling timely escalation to investigative teams. In this context, precision can be sacrificed to ensure that potentially illicit activity is flagged, even at the cost of increased review workload.
 
 In this project, our objective is to develop deep learning models using the SAML-D dataset to identify suspicious financial transactions. We aim to reduce false positives while enhancing recall within anti-money laundering (AML) systems. Additionally, we plan to explore the use of OpenAI's GPT to generate natural language explanations for each flagged transaction, improving interpretability for compliance teams. If time permits, we will deploy the solution to AWS, likely leveraging S3 for storage and scalability.
 
@@ -82,9 +82,50 @@ The dataset includes the following 12 features:
 - `Is_laundering`: Target variable indicating whether the transaction is laundering (`1`) or not (`0`)
 - `Laundering_type`: A categorical feature that includes 28 laundering typologies, derived from literature and semi-structured interviews with AML specialists.
 
----
+<h4 id="EDA">Exploratory Data Analysis</h4>
 
-<h3 id="Preprocessing">Preprocessing</h3>
+<p float="center">
+  <img src="/Figures/laundering_type.png" width="450" />
+  <img src="/Figures/amount_by_laundering_type.png" width="450" />
+</p>
+<p align="center"><b>Figure 2. Laundering types (left) and median log-transformed transaction amounts by type (right).
+</b></p>
+
+<p float="center">
+  <img src="/Figures/top_receiver_locations.png" width="450" />
+  <img src="/Figures/top_sender_locations.png" width="450" />
+</p>
+<p align="center"><b>Figure 3. Histograms of receiver bank locations (left) and sender bank locations (right).
+</b></p>
+
+<p float="center">
+  <img src="/Figures/top_20_money_transfer.png" width="450" />
+  <img src="/Figures/top_20_currency_pairs.png" width="450" />
+</p>
+<p align="center"><b>Figure 4. op 20 money transfer routes (left) and currency pairs (right).
+</b></p>
+
+<h4 id="Features">Time‑Based and Graph‑Inspired Feature Engineering</h4>
+
+From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
+
+In addition, we engineered several domain‑specific features (see Figure 5) designed to capture structural and behavioral signals of anomalous activity:
+
+- `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
+- `fan_in_out_ratio`: The ratio of inbound to outbound counterparties over 30 days, highlighting imbalances in transactional relationships.
+- `fanin_intensity_ratio`: The `fanin_30d` value normalized by the daily number of received transactions, concentration of inbound activity.
+- `amount_dispersion_std`: The standard deviation of transaction amounts per sender, capturing volatility in counterparties' transfer sizes.
+- `sent_to_received_ratio_monthly`: The ratio of total received to total sent amounts within a month. Ratios trending toward 1 may indicate circular or balancing behavior that warrants scrutiny
+- `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
+- `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
+
+<p float="center">
+  <img src="/Figures/fanin.JPG" width="250" />
+  <img src="/Figures/fanout.JPG" width="250" />
+  <img src="/Figures/circular_transaction.JPG" width="300" />
+</p>
+<p align="center"><b>Figure 5. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
+</b></p>
 
 <h4 id="Recasting">Memory Optimization via Integer Recasting</h4>
 
@@ -107,30 +148,6 @@ This temporal splitting strategy serves two purposes:
 - Prevents data leakage: ensuring that information from the future does not inadvertently influence the training process.
 - Maintains class stratification: preserving the relative balance of rare and common classes across all subsets, which is critical for reliable model evaluation.
 
----
-
-<h3 id="Features">Time‑Based and Graph‑Inspired Feature Engineering</h3>
-
-From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
-
-In addition, we engineered several domain‑specific features (see Figure 2) designed to capture structural and behavioral signals of anomalous activity:
-
-- `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
-- `fan_in_out_ratio`: The ratio of inbound to outbound counterparties over 30 days, highlighting imbalances in transactional relationships.
-- `fanin_intensity_ratio`: The `fanin_30d` value normalized by the daily number of received transactions, concentration of inbound activity.
-- `amount_dispersion_std`: The standard deviation of transaction amounts per sender, capturing volatility in counterparties' transfer sizes.
-- `sent_to_received_ratio_monthly`: The ratio of total received to total sent amounts within a month. Ratios trending toward 1 may indicate circular or balancing behavior that warrants scrutiny
-- `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
-- `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
-
-<p float="center">
-  <img src="/Figures/fanin.JPG" width="250" />
-  <img src="/Figures/fanout.JPG" width="250" />
-  <img src="/Figures/circular_transaction.JPG" width="300" />
-</p>
-<p align="center"><b>Figure 2. Transaction topology examples used in feature engineering: (left) fanin (aggregation into a hub), (mid) fanout (dispersion from a hub), and (right) circular_transaction (directed cycle returning to origin).
-</b></p>
-
 
 ---
 
@@ -149,12 +166,12 @@ Parameters considered:
 
 <h4 id="Baseline-Preprocess">Preprocess</h4>
 
-Using the correlation matrix (see Figure 3), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
+Using the correlation matrix (see Figure 6), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
 
 <p float="center">
   <img src="/Figures/corr_mat.png" width="1000" />
 </p>
-<p align="center"><b>Figure 3. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+<p align="center"><b>Figure 6. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
 
 We trained the model and used a held‑out validation set to tune hyperparameters. We performed a grid search over `max_depth`, `learning_rate`, and `subsample` to identify the best-performing configurations.
 
@@ -171,13 +188,13 @@ We trained the model and used a held‑out validation set to tune hyperparameter
 We trained an XGBoost model on the combined training and validation sets, selecting hyperparameters that yielded the highest F1 score during validation: `max_depth` = 10, `learning_rate` = 0.01, and `subsample` = 1. 
 
 The resulting model achieved a high precision of 0.887, indicating that the majority of flagged transactions were indeed suspicious, an encouraging outcome for reducing false positives and minimizing unnecessary compliance reviews. However, recall remained relatively low at 0.413, suggesting that the model failed to identify a significant portion of true suspicious cases. This trade-off reflects a common challenge in anti-money laundering systems, where precision is often favored to avoid overwhelming investigators, but at the cost of missing subtle or novel laundering behaviors.
-The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics are visualized in Figure 4, which presents the confusion matrix (left) and the precision–recall curve (right).
+The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics are visualized in Figure 7, which presents the confusion matrix (left) and the precision–recall curve (right).
 
 <p float="center">
   <img src="/Figures/XGBoost_confusion_mat.png" width="350" />
   <img src="/Figures/xgboost_pr_curve.png" width="450" />
 </p>
-<p align="center"><b>Figure 4. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
+<p align="center"><b>Figure 7. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
 </b></p>
 
 We assessed feature importance using SHAP values (see Figure 5). The SHAP summary identified the strongest signals and their directions. The top six features contributing most to classification were `back_and_forth_transfers`, `fanin_30d`, `sent_to_received_ratio_monthly`, `fanin_intensity_ratio`, `Amount`, `circular_transaction_count`, and `currency_mismatch`. Other features had smaller SHAP contributions and do not materially influence classification relative to these variables. These results highlighted behavioral patterns to prioritize during feature engineering and threshold selection and warrant further investigation to confirm they align with domain expertise and are not artifacts of sampling or labeling.
@@ -185,9 +202,9 @@ We assessed feature importance using SHAP values (see Figure 5). The SHAP summar
 <p float="center">
   <img src="/Figures/xgboost_shap_summary.png" width="1000" />
 </p>
-<p align="center"><b>Figure 5. SHAP summary plot for the XGBoost model, showing the impact of each feature on model output. Each point represents a SHAP value for a single prediction. Color indicates the feature value (e.g., red = high, blue = low). Features are ranked by mean absolute SHAP value, highlighting their overall importance.</b></p>
+<p align="center"><b>Figure 8. SHAP summary plot for the XGBoost model, showing the impact of each feature on model output. Each point represents a SHAP value for a single prediction. Color indicates the feature value (e.g., red = high, blue = low). Features are ranked by mean absolute SHAP value, highlighting their overall importance.</b></p>
 
-We also visualized SHAP values for four key features: `back_and_forth_transfers`, `circular_transaction_count`, `currency_mismatch`, and `high_risk_sender` (see Figure 6). In each plot, color intensity represented the logarithmic scale of transaction amounts, helping contextualize feature impact across varying transaction sizes.
+We also visualized SHAP values for four key features: `back_and_forth_transfers`, `circular_transaction_count`, `currency_mismatch`, and `high_risk_sender` (see Figure 9). In each plot, color intensity represented the logarithmic scale of transaction amounts, helping contextualize feature impact across varying transaction sizes.
 
 The feature `back_and_forth_transfers` captured the number of transfers between the same sender and receiver within a single day. We observed that low values (1 or 2 transfers) were associated with positive SHAP values, indicating the model leaned toward predicting class `1`, i.e. suspicious or laundering-related activity. In contrast, values of 3 or more were linked to negative SHAP values, suggesting the model interpreted these as normal transactions. This pattern may reflect the model's sensitivity to unusually short, reciprocal transfer chains.
 
@@ -202,8 +219,7 @@ Both `currency_mismatch` and `high_risk_sender` exhibited consistently positive 
   <img src="/Figures/xgboost_shap_high_risk_sender.png" width="400" />
 </p>
 
-**Figure 6. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
-
+**Figure 9. SHAP values plotted against  (top left) `back_and_forth_transfers`,  (top right) `circular_transaction_count`,  (bottom left) `currency_mismatch`,  (bottom right) `high_risk_sender`.  Color intensity reflects the logarithmic scale of transaction amounts.**
 
 ---
 
@@ -229,7 +245,7 @@ Through multi-head self attention residual attention and shared embedding, the T
 <p float="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
-<p align="center"><b>Figure 7. Overview of Transformer Model architecture.</b></p>
+<p align="center"><b>Figure 10. Overview of Transformer Model architecture.</b></p>
 
 <h4 id="Transformer-Preprocess">Preprocess</h4>
 
@@ -239,7 +255,6 @@ Through multi-head self attention residual attention and shared embedding, the T
 - Continuous features are standardized using StandardScaler. 
 
 <h4 id="Transformer-Result">Result</h4>
-
 
 ---
 
@@ -264,6 +279,11 @@ We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, whic
 - GATConv (GNN1): The first GATConv layer aggregates neighbor information using attention mechanisms, refining node representations based on relevant sender-receiver relationships.
 - GATConv (GNN1): The second GATConv layer further enhances node features through additional message passing, deepening the model's ability to detect complex laundering patterns.
 - Linear (lin): The linear layer combines concatenated sender, receiver, and edge features to produce a single logit for binary edge classification, determining the likelihood of laundering.
+
+<p float="center">
+  <img src="/Figures/TGNN_diagram.JPG" width="1000" />
+</p>
+<p align="center"><b>Figure 11. Architecture of the Temporal Graph Neural Network (TGNN).</b></p>
 
 <h4 id="GNN-Preprocess">Preprocess</h4>
 
