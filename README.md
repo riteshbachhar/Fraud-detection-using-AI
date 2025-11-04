@@ -63,9 +63,9 @@ In this project, our objective is to develop deep learning models using the SAML
 
 ---
 
-<h3 id="Dataset">Dataset</h3>
+<h3 id="Dataset">Dataset Overview</h3>
 
-The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-monitoring-dataset-aml/data">SAML-D dataset</a> is a synthetic dataset of 9.5 million transactions, developed using insights from AML specialists through semi-structured interviews, analysis of existing datasets, and a comprehensive literature review. The dataset includes 28 typologies, 11 normal and 17 suspicious, modelled to reflect real-world senarios, with overlapping behaviours between normaal and suspicious transactions to increase complexity and challenge detection efforts. The dataset includes 676,912 unique accounts conducting transactions across 18 geographic locations, using 13 currencies and 7 payment methods. Among these, 0.104% of the transactions (9,873 entires) are labeled as suspicious representing various money laundering techniques such as layering, rapid fund movement, and transactions to high risk locations.
+The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-monitoring-dataset-aml/data">SAML-D dataset</a> is a synthetic dataset of 9.5 million transactions, developed using insights from AML specialists through semi-structured interviews, analysis of existing datasets, and a comprehensive literature review. The dataset includes 28 typologies, 11 normal and 17 suspicious, modelled to reflect real-world senarios, with overlapping behaviours between normaal and suspicious transactions to increase complexity and challenge detection efforts. The dataset includes 676,912 unique accounts conducting transactions across 18 geographic locations, using 13 currencies and 7 payment methods. Among these, 0.104% of the transactions (9,873 entires) are labeled as suspicious representing various money laundering techniques such as layering, rapid fund movement, and transactions to high risk locations (see Figure 2).
 
 <p float="center">
   <img src="/Figures/imbalanced_class.png" width="450" />
@@ -288,7 +288,7 @@ We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, whic
 <p float="center">
   <img src="/Figures/TGNN_diagram.JPG" width="1000" />
 </p>
-<p align="center"><b>Figure 11. Architecture of the Temporal Graph Neural Network (TGNN).</b></p>
+<p align="center"><b>Figure 12. Architecture of the Temporal Graph Neural Network (TGNN).</b></p>
 
 <h4 id="GNN-Preprocess">Preprocess</h4>
 
