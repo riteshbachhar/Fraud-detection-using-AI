@@ -89,25 +89,35 @@ The dataset includes the following 12 features:
 
 <h4 id="EDA">Exploratory Data Analysis</h4>
 
-<p float="center">
-  <img src="/Figures/laundering_type.png" width="400" />
-  <img src="/Figures/amount_by_laundering_type.png" width="400" />
-</p>
-<p align="center"><b>Figure 3. Laundering types (left) and median log-transformed transaction amounts by type (right).
-</b></p>
+28 transaction typologies were identified through structured, semi‑structured interviews with eight subject‑matter experts in anti‑money‑laundering. 
+- Eleven typologies were classified as normal: `normal small fan‑out`, `normal fan‑out`, `normal fan‑in`, `normal group`, `normal cash withdrawal`, `normal cash deposit`, `normal periodic`, `normal plus mutual`, `normal mutual`, `normal forward`, and `normal single large`.
+- Seventeen were classified as suspicious: `structuring`, `cash withdrawal`, `deposit‑send`, `smurfing`, `layered fan‑in`, `layered fan‑out`, `stacked bipartite`, `behavioral change 1`, `behavioral change 2`, `bipartite`, `cycle`, `fan‑in`, `gather‑scatter`, `scatter‑gather`, `single large`, `fan‑out`, `and over‑invoicing`.
+
+The top 20 laundering types by log count highlight `structuring`, `cash withdrawal`, `deposit‑send`, and `smurfing` as the most frequent suspicious typologies (see Figure 3). By median log amount, `over‑invoicing` dominates the chart and `single large` ranked among the top three, showing that high‑magnitude events drive a different signal than high‑frequency events. Together, these patterns show that frequency‑based and magnitude‑based indicators capture distinct risk strata and therefore both should be incorporated into the detection pipeline.
 
 <p float="center">
-  <img src="/Figures/top_receiver_locations.png" width="400" />
-  <img src="/Figures/top_sender_locations.png" width="400" />
+  <img src="/Figures/laundering_type.png" width="1000" />
+  <img src="/Figures/amount_by_laundering_type.png" width="1000" />
 </p>
-<p align="center"><b>Figure 4. Histograms of receiver bank locations (left) and sender bank locations (right).
+<p align="center"><b>Figure 3. Laundering types (top) and median log-transformed transaction amounts by type (bottom).
 </b></p>
 
+We then examined sender and receiver locations. The majority of both senders and receivers were located in the `UK`, while transactions involving other countries were more evenly distributed. The dataset designated `Mexico`, `Turkey`, `Morocco`, and the `UAE` as higher‑risk countries; these classifications were applied to the analysis rather than inferred directly from the data. Notably, only `Morocco` and `Mexico` appeared among the top 20 receiver bank locations, whereas all four countries appeared in the top 20 sender locations, suggesting asymmetric flows that merit separate sender‑ and receiver‑based scrutiny (see Figure 4).
+
 <p float="center">
-  <img src="/Figures/top_20_money_transfer.png" width="400" />
-  <img src="/Figures/top_20_currency_pairs.png" width="400" />
+  <img src="/Figures/top_receiver_locations.png" width="1000" />
+  <img src="/Figures/top_sender_locations.png" width="1000" />
 </p>
-<p align="center"><b>Figure 5. Top 20 money transfer routes (left) and currency pairs (right).
+<p align="center"><b>Figure 4. Histograms of receiver bank locations (top) and sender bank locations (bottom).
+</b></p>
+
+Most of the top 20 money‑transfer routes are domestic (UK → UK), but the top‑20 list also includes several UK → designated high‑risk‑country corridors, indicating concentrated outbound flows along specific cross‑border routes. To better understand cross‑border behavior, we examined currency mismatches: among the top 20 currency pairs only GBP → GBP is a same‑currency pair; all other top pairs involved currency conversion. Currency conversion therefore appeared to be a persistent characteristic of high‑volume corridors and may interact with typology and routing signals to reveal elevated risk (see Figure 5).
+
+<p float="center">
+  <img src="/Figures/top_20_money_transfer.png" width="1000" />
+  <img src="/Figures/top_20_currency_pairs.png" width="1000" />
+</p>
+<p align="center"><b>Figure 5. Top 20 money transfer routes (top) and currency pairs (bottom).
 </b></p>
 
 <h4 id="Features">Time‑Based and Graph‑Inspired Feature Engineering</h4>
