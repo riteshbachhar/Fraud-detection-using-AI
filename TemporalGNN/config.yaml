@@ -1,0 +1,29 @@
+preprocessing:
+  time_window: '7D'
+  validation_split: 0.17
+  test_split: 0.13
+
+model:
+  type: TemporalEdgeClassifier
+  hidden_dim: 128
+  node_dim: 15
+  edge_dim: 9
+  dropout: 0.3
+
+training:
+  sequence_length: 4  # Number of time steps before breaking gradient flow
+  epochs: 150
+  learning_rate: 0.0005
+  weight_decay: 0.00001
+  patience: 10        # Early stopping patience
+  beta: 2             # For F2 optimization
+
+loss:
+  type: FocalLoss
+  alpha: 0.25
+  gamma: 2.0
+
+scheduler:
+  type: ReduceLROnPlateau
+  factor: 0.5
+  patience: 3
