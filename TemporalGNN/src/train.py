@@ -5,8 +5,12 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from sklearn.metrics import fbeta_score
-from model import create_model
-from utils import FocalLoss, load_config
+try:
+    from model import create_model
+    from utils import FocalLoss, load_config
+except ImportError:
+    from src.model import create_model
+    from src.utils import FocalLoss, load_config
 from sklearn.metrics import recall_score
 import json
 import numpy as np
