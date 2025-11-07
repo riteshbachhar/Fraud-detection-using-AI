@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import json
+import seaborn as sns
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
@@ -91,43 +92,36 @@ class ModelEvaluator:
         logger.info(f"PR-AUC: {metrics['pr_auc']:.4f}")
         
         # Generate plots
-        # self.plot_results(probs, labels, binary_preds, split_name)
+        self.plot_results(probs, labels, binary_preds, split_name)
         
         return metrics, probs, labels
 
     def plot_results(self, probs, labels, preds, split_name):
         """Generate evaluation plots"""
-        from sklearn.metrics import roc_curve, precision_recall_curve
+        from sklearn.metrics import precision_recall_curve, confusion_matrix, average_precision_score
+        import matplotlib.pyplot as plt
+        import seaborn as sns
         
-        fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-        
-        # ROC Curve
-        fpr, tpr, _ = roc_curve(labels, probs)
-        axes[0,0].plot(fpr, tpr)
-        axes[0,0].plot([0, 1], [0, 1], 'k--')
-        axes[0,0].set_xlabel('False Positive Rate')
-        axes[0,0].set_ylabel('True Positive Rate')
-        axes[0,0].set_title('ROC Curve')
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
         
         # Precision-Recall Curve
         precision, recall, _ = precision_recall_curve(labels, probs)
-        axes[0,1].plot(recall, precision)
-        axes[0,1].set_xlabel('Recall')
-        axes[0,1].set_ylabel('Precision')
-        axes[0,1].set_title('Precision-Recall Curve')
+        ap = average_precision_score(labels, probs)
+        axes[0].plot(recall, precision, linewidth=2)
+        axes[0].set_xlabel('Recall')
+        axes[0].set_ylabel('Precision')
+        axes[0].set_title(f'Precision-Recall Curve (AP={ap:.3f})')
+        axes[0].grid(True, alpha=0.3)
         
-        # Confusion Matrix
+        # Confusion Matrix with seaborn heatmap
         cm = confusion_matrix(labels, preds)
-        axes[1,0].imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-        axes[1,0].set_title('Confusion Matrix')
-        
-        # Probability Distribution
-        axes[1,1].hist(probs[labels==0], alpha=0.5, label='Non-fraud', bins=50)
-        axes[1,1].hist(probs[labels==1], alpha=0.5, label='Fraud', bins=50)
-        axes[1,1].set_xlabel('Prediction Probability')
-        axes[1,1].set_ylabel('Count')
-        axes[1,1].set_title('Prediction Distribution')
-        axes[1,1].legend()
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                    square=True, ax=axes[1],
+                    xticklabels=['Non-suspicious', 'Suspicious'],
+                    yticklabels=['Non-suspicious', 'Suspicious'])
+        axes[1].set_title('Confusion Matrix')
+        axes[1].set_ylabel('True Label')
+        axes[1].set_xlabel('Predicted Label')
         
         plt.tight_layout()
         plt.savefig(f'results/{split_name}_evaluation_plots.png', dpi=300, bbox_inches='tight')
