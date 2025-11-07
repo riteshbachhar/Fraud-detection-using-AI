@@ -295,6 +295,9 @@ We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, whic
 - GATConv (GNN1): The second GATConv layer further enhances node features through additional message passing, deepening the model's ability to detect complex laundering patterns.
 - Linear (lin): The linear layer combines concatenated sender, receiver, and edge features to produce a single logit for binary edge classification, determining the likelihood of laundering.
 
+Money laundering is fundamentally a network-based problem, not an individual one. Thus, we implemented a temporal neural network to flag suspicious transactions (see Figure 12). We first convert transactions into graphs using a 7-day window, where each node represents an account, and edges represent the transactions. To prevent data leakage, we only calculated the account-level statistics over that specific time window. Forward pass through the network goes as follows: The model performs a temporal update for each node via GRU cell. This updates node's current state $h_{t-1}$ with current node features ($X_t$), learning node-level temporal dynamics. Next, the proposed hidden state is passed through 3-layer GraphSAGE network. This step updates the node features by a method called message passing. This allows the nodes to learn about their neighbourhood and create a final embedding $h_{t}$. Finally, in the classification step, the model predicts each transaction. The hidden state of the sender node and the hidden state of the receiver node are concatenated with the transaction feature and passed through an MLP. This calculates a single logit, which is compared with the true label to compute a loss function.
+
+
 <p float="center">
   <img src="/Figures/TGNN_diagram.JPG" width="1000" />
 </p>

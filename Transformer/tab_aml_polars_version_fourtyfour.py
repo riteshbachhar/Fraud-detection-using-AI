@@ -2,8 +2,7 @@ from __future__ import annotations
 from datetime import timedelta
 import hashlib
 from dataclasses import dataclass
-from typing import List
-
+from typing import List, Dict, Optional
 import numpy as np
 import polars as pl
 import torch
@@ -13,23 +12,38 @@ from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import (
     roc_auc_score, precision_recall_curve, auc as auc_metric,
-    recall_score, precision_score, f1_score, confusion_matrix,
-)
+    recall_score, precision_score, f1_score, confusion_matrix,)
 
-# -------------------------------------------------------------------------
+
 # Utility
-# -------------------------------------------------------------------------
+
 def fast_hash(x: str, num_buckets: int = 50_000) -> int:
+    """Deterministic hash to integer within [0, num_buckets)."""
     if x is None:
         return 0
     return int(hashlib.md5(str(x).encode()).hexdigest(), 16) % num_buckets
 
 
-# -------------------------------------------------------------------------
+def _next_pow2(n: int) -> int:
+    """Return next power-of-two >= n."""
+    if n <= 1:
+        return 1
+    return 1 << (n - 1).bit_length()
+
+
+def suggest_hash_buckets(n_unique: int, growth: float = 1.25, cap: Optional[int] = None) -> int:
+    """Suggest a hash bucket size based on number of uniques."""
+    base = int(max(1, np.ceil(n_unique * growth)))
+    buckets = _next_pow2(base)
+    if cap is not None:
+        buckets = min(buckets, cap)
+    return max(buckets, 2)
+
+
 # Loss Functions
-# -------------------------------------------------------------------------
+
 class FocalLoss(nn.Module):
-    """Balanced focal loss with alpha in [0,1]."""
+    """Balanced focal loss."""
     def __init__(self, alpha=0.75, gamma=2.0):
         super().__init__()
         self.alpha = alpha
@@ -46,50 +60,29 @@ class FocalLoss(nn.Module):
 
 
 def compute_pos_weight(y_series: pl.Series) -> float:
-    """Compute pos_weight for BCE from imbalance."""
+    """Compute positive-class weight for BCE loss."""
     y = y_series.to_numpy()
     p = int((y == 1).sum())
     n = int((y == 0).sum())
     return max(n / max(p, 1), 1.0)
 
-# -------------------------------------------------------------------------
+
 # Sampler
-# -------------------------------------------------------------------------
-def build_weighted_sampler(labels: pl.Series, power: float = 1.0) -> WeightedRandomSampler:
-    """
-    Creates a WeightedRandomSampler to oversample the minority class.
 
-    Args:
-        labels: Polars Series of binary class labels (0 and 1)
-        power:  Controls how strongly to rebalance.
-                1.0  = full inverse-frequency weighting (strong oversampling)
-                0.7  = smoother weighting (less aggressive)
-                0.0  = uniform sampling (no weighting)
-    Returns:
-        torch.utils.data.WeightedRandomSampler
-    """
+def build_weighted_sampler(labels: pl.Series, power: float = 0.7) -> WeightedRandomSampler:
+    """Weighted sampler for imbalance control."""
     y = labels.to_numpy()
-
     unique, counts = np.unique(y, return_counts=True)
     class_counts = dict(zip(unique, counts))
-
     weights = np.array([1.0 / (class_counts[c] ** power) for c in y], dtype=np.float32)
     weights = torch.as_tensor(weights)
-
-    sampler = WeightedRandomSampler(
-        weights=weights,
-        num_samples=len(weights),
-        replacement=True
-    )
-    return sampler
+    return WeightedRandomSampler(weights=weights, num_samples=len(weights), replacement=True)
 
 
-
-# -------------------------------------------------------------------------
 # Preprocessing
-# -------------------------------------------------------------------------
+
 def preprocess_saml_d(df: pl.DataFrame) -> pl.DataFrame:
-    # Ensure Date + Time
+    """Clean datetime fields, add temporal and log features."""
     if df["Date"].dtype != pl.Utf8:
         df = df.with_columns(pl.col("Date").dt.strftime("%Y-%m-%d").alias("Date"))
     df = df.with_columns(pl.col("Time").cast(pl.Utf8, strict=False))
@@ -97,8 +90,6 @@ def preprocess_saml_d(df: pl.DataFrame) -> pl.DataFrame:
     ts_hms = dt_str.str.strptime(pl.Datetime(), "%Y-%m-%d %H:%M:%S", strict=False)
     ts_hm = dt_str.str.strptime(pl.Datetime(), "%Y-%m-%d %H:%M", strict=False)
     df = df.with_columns(pl.coalesce([ts_hms, ts_hm]).alias("timestamp")).drop_nulls(["timestamp"])
-
-    # Temporal features
     df = df.with_columns([
         pl.col("timestamp").dt.day().alias("day"),
         pl.col("timestamp").dt.month().alias("month"),
@@ -107,21 +98,19 @@ def preprocess_saml_d(df: pl.DataFrame) -> pl.DataFrame:
         pl.col("timestamp").dt.weekday().alias("day_of_week"),
         (pl.col("timestamp").dt.weekday() >= 5).cast(pl.Int8).alias("is_weekend"),
     ])
-
-    # Amount log
     df = df.with_columns(
         pl.when(pl.col("Amount").is_not_null())
           .then(pl.col("Amount").cast(pl.Float64).log1p())
           .otherwise(None)
           .alias("amount_log")
     )
-
     df = df.with_columns(pl.col("timestamp").dt.date().alias("Date"))
     df = df.drop(["Laundering_type", "Time", "Amount"], strict=False)
     return df
 
 
 def recast(df: pl.DataFrame) -> pl.DataFrame:
+    """Downcast integer columns to smaller dtypes."""
     exclude = ["Sender_account", "Receiver_account"]
     for col in df.columns:
         if col not in exclude:
@@ -139,27 +128,24 @@ def recast(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def custom_split_polars(df: pl.DataFrame, validation_days=70, test_days=35):
-    dtype = df["Date"].dtype
-    if dtype == pl.Utf8:
+    """Temporal train/val/test split."""
+    if df["Date"].dtype == pl.Utf8:
         df = df.with_columns(pl.col("Date").str.strptime(pl.Datetime(), "%Y-%m-%d", strict=False))
-    elif dtype == pl.Date:
+    elif df["Date"].dtype == pl.Date:
         df = df.with_columns(pl.col("Date").cast(pl.Datetime()))
     df = df.sort("Date")
-
     max_date = df.select(pl.col("Date").max()).item()
     test_cutoff = max_date - timedelta(days=test_days)
     val_cutoff = test_cutoff - timedelta(days=validation_days)
     train_df = df.filter(pl.col("Date") < val_cutoff)
     val_df = df.filter((pl.col("Date") >= val_cutoff) & (pl.col("Date") < test_cutoff))
     test_df = df.filter(pl.col("Date") >= test_cutoff)
-
     print(f"Split complete:\n  Train: {train_df.height}\n  Val: {val_df.height}\n  Test: {test_df.height}")
     return train_df, val_df, test_df
 
 
-# -------------------------------------------------------------------------
 # Dataset
-# -------------------------------------------------------------------------
+
 @dataclass
 class EncodedBatch:
     x_cat: torch.LongTensor
@@ -175,9 +161,12 @@ def collate_encoded_batch(batch: List[EncodedBatch]) -> EncodedBatch:
 
 
 class TabAMLDataset(Dataset):
-    """Encodes categorical and continuous features with fitted encoders/scaler."""
+    """Encodes categorical + continuous features; adaptive hash for Sender/Receiver accounts."""
     def __init__(self, df, cat_cols, cont_cols, label_col,
-                 encoders=None, scaler=None, fit=True):
+                 encoders=None, scaler=None, fit=True,
+                 hash_bucket_sizes: Optional[Dict[str, int]] = None,
+                 hash_growth: float = 1.25,
+                 hash_cap: Optional[Dict[str, int]] = None):
         super().__init__()
         self.df = df
         self.cat_cols = cat_cols
@@ -186,36 +175,52 @@ class TabAMLDataset(Dataset):
         self.y = df[label_col].cast(pl.Float32).to_numpy()
         self.encoders = {} if fit or encoders is None else encoders
 
+        high_card_cols = {"Sender_account", "Receiver_account"}
+        if fit:
+            self.hash_bucket_sizes = {}
+            for col in (high_card_cols & set(cat_cols)):
+                n_unique = int(df[col].n_unique())
+                cap_for_col = (hash_cap or {}).get(col) if hash_cap else None
+                self.hash_bucket_sizes[col] = suggest_hash_buckets(n_unique, growth=hash_growth, cap=cap_for_col)
+        else:
+            if hash_bucket_sizes is None:
+                raise ValueError("hash_bucket_sizes must be provided when fit=False.")
+            self.hash_bucket_sizes = dict(hash_bucket_sizes)
+
         encoded_cols = []
         for col in cat_cols:
-            col_vals = df[col].cast(pl.Utf8).to_list()
-            if col in ("Sender_account", "Receiver_account"):
-                hashed = np.fromiter((fast_hash(v) for v in col_vals), dtype=np.int64)
-                encoded_cols.append(hashed)
+            vals = df[col].cast(pl.Utf8).to_list()
+            if col in high_card_cols:
+                buckets = self.hash_bucket_sizes[col]
+                arr = np.fromiter((fast_hash(v, num_buckets=buckets) for v in vals), dtype=np.int64)
+                arr %= buckets
+                encoded_cols.append(arr)
                 continue
+
             if fit or col not in self.encoders:
                 le = LabelEncoder()
-                le.fit(list(col_vals) + ["UNK"])
+                le.fit(list(vals) + ["UNK"])
                 self.encoders[col] = le
             le = self.encoders[col]
-            mapped = [v if v in le.classes_ else "UNK" for v in col_vals]
+            mapped = [v if v in le.classes_ else "UNK" for v in vals]
             encoded_cols.append(le.transform(mapped).astype(np.int64))
+
         self.x_cat = np.stack(encoded_cols, axis=1).astype(np.int64)
 
         if cont_cols:
-            cont_arr = df.select(cont_cols).to_numpy()
+            arr = df.select(cont_cols).to_numpy()
             if fit or scaler is None:
                 self.scaler = StandardScaler()
-                self.x_cont = self.scaler.fit_transform(cont_arr).astype(np.float32)
+                self.x_cont = self.scaler.fit_transform(arr).astype(np.float32)
             else:
                 self.scaler = scaler
-                self.x_cont = self.scaler.transform(cont_arr).astype(np.float32)
+                self.x_cont = self.scaler.transform(arr).astype(np.float32)
         else:
             self.scaler = None
             self.x_cont = np.empty((len(df), 0), dtype=np.float32)
 
         self.category_sizes = [
-            50_000 if c in ("Sender_account", "Receiver_account") else len(self.encoders[c].classes_)
+            self.hash_bucket_sizes[c] if c in high_card_cols else len(self.encoders[c].classes_)
             for c in cat_cols
         ]
 
@@ -227,9 +232,8 @@ class TabAMLDataset(Dataset):
         return EncodedBatch(cat, cont, y)
 
 
-# -------------------------------------------------------------------------
 # Model
-# -------------------------------------------------------------------------
+
 class ResidualAttentionLayer(nn.Module):
     def __init__(self, d_model, nhead, dim_feedforward=None, dropout=0.0):
         super().__init__()
@@ -251,7 +255,8 @@ class ResidualAttentionLayer(nn.Module):
         q, k, v = torch.chunk(qkv, 3, dim=-1)
         q, k, v = [z.view(b, t, h, d // h).transpose(1, 2) for z in (q, k, v)]
         attn = torch.einsum("bhid,bhjd->bhij", q, k) * self.scale
-        if prev_attn is not None: attn += prev_attn
+        if prev_attn is not None:
+            attn += prev_attn
         attn = F.softmax(attn, dim=-1)
         out = torch.einsum("bhij,bhjd->bhid", attn, v).transpose(1, 2).reshape(b, t, d)
         x = x + self.attn_out(self.drop(out))
@@ -262,9 +267,7 @@ class ResidualAttentionLayer(nn.Module):
 class ResidualAttentionEncoder(nn.Module):
     def __init__(self, n_layers, d_model, nhead, dropout):
         super().__init__()
-        self.layers = nn.ModuleList(
-            [ResidualAttentionLayer(d_model, nhead, dropout=dropout) for _ in range(n_layers)]
-        )
+        self.layers = nn.ModuleList([ResidualAttentionLayer(d_model, nhead, dropout=dropout) for _ in range(n_layers)])
     def forward(self, x):
         attn = None
         for layer in self.layers:
@@ -273,8 +276,8 @@ class ResidualAttentionEncoder(nn.Module):
 
 
 class TokenDropout(nn.Module):
-    """Drops entire categorical tokens (feature-level dropout)."""
-    def __init__(self, p: float = 0.10):
+    """Feature-level dropout."""
+    def __init__(self, p: float = 0.40):
         super().__init__()
         self.p = p
     def forward(self, x):
@@ -285,7 +288,7 @@ class TokenDropout(nn.Module):
 
 class TabAMLModel(nn.Module):
     def __init__(self, category_sizes, cont_dim, embedding_dim=64, shared_ratio=1/6,
-                 num_heads=4, num_layers1=2, num_layers2=2, dropout=0.25, micro_indices=(0,1)):
+                 num_heads=4, num_layers1=2, num_layers2=2, dropout=0.1, micro_indices=(0,1)):
         super().__init__()
         self.num_cat = len(category_sizes)
         self.cont_dim = cont_dim
@@ -298,21 +301,15 @@ class TabAMLModel(nn.Module):
         self.embs = nn.ModuleList([nn.Embedding(sz, self.indiv_dim) for sz in category_sizes])
         self.micro = ResidualAttentionEncoder(num_layers1, embedding_dim, num_heads, dropout)
         self.macro = ResidualAttentionEncoder(num_layers2, embedding_dim, num_heads, dropout)
-        self.token_dropout = TokenDropout(p=0.10)
+        self.token_dropout = TokenDropout(p=0.40)
 
-        if cont_dim == 0:
-            self.cont_proj = nn.Identity()
-        else:
-            self.cont_proj = nn.Sequential(
-                nn.Linear(cont_dim, cont_dim),
-                nn.LayerNorm(cont_dim),
-                nn.Dropout(0.2)
-            )
+        self.cont_proj = nn.Identity() if cont_dim == 0 else nn.Sequential(
+            nn.Linear(cont_dim, cont_dim), nn.LayerNorm(cont_dim))
 
         flat_dim = self.num_cat * embedding_dim + cont_dim
         self.mlp = nn.Sequential(
             nn.LayerNorm(flat_dim),
-            nn.Linear(flat_dim, flat_dim // 4), nn.GELU(), nn.Dropout(0.4),
+            nn.Linear(flat_dim, flat_dim // 4), nn.GELU(), nn.Dropout(0.30),
             nn.Linear(flat_dim // 4, 1)
         )
 
@@ -336,9 +333,8 @@ class TabAMLModel(nn.Module):
         return logits
 
 
-# -------------------------------------------------------------------------
-# Training / Eval
-# -------------------------------------------------------------------------
+# Training / Evaluation
+
 def train_epoch(model, loader, optimizer, loss_fn, device, max_norm=2.0):
     model.train()
     total, n = 0.0, 0
@@ -378,28 +374,3 @@ def evaluate(model, loader, loss_fn, device, threshold=0.5):
     rec_v, prec_v, f1_v = recall_score(y_all, preds), precision_score(y_all, preds), f1_score(y_all, preds)
     tn, fp, fn, tp = confusion_matrix(y_all, preds).ravel().tolist()
     return avg_loss, auc_roc, auc_pr, rec_v, prec_v, f1_v, (tn, fp, fn, tp)
-
-
-@torch.no_grad()
-def pick_threshold_by(val_loader, model, device, criterion="f1", min_precision=None):
-    """Find optimal threshold by F1 or recall@precision."""
-    model.eval()
-    y_all, p_all = [], []
-    for batch in val_loader:
-        x_cat, x_cont, y = batch.x_cat.to(device), batch.x_cont.to(device), batch.y.to(device)
-        p = torch.sigmoid(model(x_cat, x_cont)).cpu().numpy()
-        y_all.extend(y.cpu().numpy()); p_all.extend(p)
-    y_all, p_all = np.array(y_all), np.array(p_all)
-    prec, rec, thr = precision_recall_curve(y_all, p_all)
-    if criterion == "f1":
-        f1 = 2 * prec * rec / (prec + rec + 1e-12)
-        best_idx = np.nanargmax(f1)
-    elif criterion == "recall_at_precision":
-        assert min_precision is not None
-        valid = np.where(prec >= min_precision)[0]
-        best_idx = valid[np.argmax(rec[valid])] if len(valid) else np.argmax(rec)
-    else:
-        raise ValueError("Unknown criterion")
-    best_thr = thr[max(best_idx - 1, 0)] if best_idx < len(thr) else 0.5
-    return float(best_thr), float(prec[best_idx]), float(rec[best_idx])
-
