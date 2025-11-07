@@ -189,6 +189,7 @@ def main():
 
     # Save the trained model
     Path('results').mkdir(parents=True, exist_ok=True)
+    Path('weights').mkdir(parents=True, exist_ok=True)
     metrics = {
         'train_loss_history': results['train_loss_history'],
         'val_loss_history': results['val_loss_history'],
@@ -199,8 +200,9 @@ def main():
     with open('results/training_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=2)
     # Save model weights
-    torch.save(results['model'].state_dict(), 'results/model_weights.pth')
-    logger.info("Training complete. Model and metrics saved to 'results/' directory.")
+    torch.save(results['model'].state_dict(), 'weights/model_weights.pth')
+    logger.info("Training complete. Metrics saved to 'results/training_metrics.json' \
+                and model weights to 'weights/model_weights.pth'.")
 
 if __name__ == "__main__":
     main()
