@@ -18,22 +18,12 @@ Define Problem: Money laundering is the process of conversion of illicit money w
             <li><a href="#Train-Test-split">Custom Train-test split</a></li>
         </ul>
     <li><a href="#Baseline">Baseline Model: XGBoost</a></li>
-        <ul>
-            <li><a href="#Baseline-Architecture">Architecture</a></li>
-            <li><a href="#Baseline-Preprocess">Preprocess</a></li>
-            <li><a href="#Baseline-Result">Result</a></li>
-        </ul>
     <li><a href="#Transformer">Transformer</a></li>
-        <ul>
-            <li><a href="#Transformer-Architecture">Architecture</a></li>
-            <li><a href="#Transformer-Preprocess">Preprocess</a></li>
-            <li><a href="#Transformer-Result">Result</a></li>
-        </ul>
     <li><a href="#GNN">Graph Neural Network</a></li>
+    <li><a href="#Conclusion">Conclusion</a></li>
         <ul>
-            <li><a href="#GNN-Architecture">Architecture</a></li>
-            <li><a href="#GNN-Preprocess">Preprocess</a></li>
-            <li><a href="#GNN-Result">Result</a></li>
+            <li><a href="#Comparison">Model Comparison</a></li>
+            <li><a href="#Future">Real-World Impact and Future Work</li>
         </ul>
     <li><a href="#References">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
@@ -179,8 +169,6 @@ Parameters considered:
 - `learning_rate`: 0.1, 0.05, 0.01
 - `subsample`: 0.3, 0.5, 1
 
-<h4 id="Baseline-Preprocess">Preprocess</h4>
-
 Using the correlation matrix (see Figure 7), we identified and removed eight features that were highly collinear with other predictors, resulting in a final set of 15 features for modeling and analysis. This reduction improved interpretability and reduced redundancy in the feature set prior to training and validation.
 
 <p float="center">
@@ -197,8 +185,6 @@ We trained the model and used a held‑out validation set to tune hyperparameter
 <p float="center">
   <img src="/Figures/xgboost_hypertuning.JPG" width="800" />
 </p>
-
-<h4 id="Baseline-Result">Result</h4>
 
 We trained an XGBoost model on the combined training and validation sets, selecting hyperparameters that yielded the highest F1 score during validation: `max_depth` = 10, `learning_rate` = 0.01, and `subsample` = 1. 
 
@@ -240,36 +226,24 @@ Both `currency_mismatch` and `high_risk_sender` exhibited consistently positive 
 
 <h3 id="Transformer">Transformer</h3>
 
-The transformer was selected as one of the deep learning models, drawing inspiration from the Tab-AML Tranformer in "Tab-AML: A Transformer Based Transaction Monitoring Model for Anti-Money Laundering." This choice was motivated by the Transformer's strong ability to capture complex relationships among categorical and numerical features in financial data. 
+The limitation with XGBoost is that it treated each feature independently, but laundering was defined by how accounts interact. That led us to use a Tabular Transformer. This model learned behavior patterns rather than isolated features. 
 
-Each Categorical feature is first transformed into a learned embedding vector. These embeddings are then processed by two encoder modules:
-- A micro encoder that focuses on the sender-receiver relationship, learning direct transaction-level dependancies. 
-- A macro-encoder that integrates all categorical and continuous features to learn broader contextual and temporal patterns. 
+**Transformer architecture**
 
-Through multi-head self attention residual attention and shared embedding, the Transformer captures complex relationships among transaction features. Residual attention ensure that previously learned information is preserved through multiple layers, enabling the model to understand complex financial behaviors at differnt levels of detail. Thus, it is suitable for detecting indirect money laundering activities.
-
-<h4 id="Transformer-Architecture">Architecture</h4>
-
-- Categorical Features: Each feature is embedded into a vector split into shared and individual components.
-- Micro Attention Encoder: Learns relationships between selected key features (sender and receiver account).
-- Macro Attention Encoder: Aggregates contextual information across all categorical features. 
-- MLP: Combines flattened Transformer output and scaled continuous features through three GELU-activated linear layers with dropout. 
-- Loss Function: Uses Focal Loss to focus learning on the minority class. 
-- Sampler: A weightedRandomSampler balances the training data by oversampling rare laundering examples.
+The transformer model was tailored for tabular financial data to detect money-laundering transactions. It featured a two-stage attention mechanism: `micro-attention` layer that learns relationships between sender and receiver accounts, and `macro-attention` layer that captured global dependencies across all transaction features (see Figure 11). Each attention block included residual connections, layer normalization, and dropout at 0.5 to prevent overfitting. Continuous features were processed through a small feed-forward network and then combined with categorical embeddings before classification through a multilayer perceptron. The model was trained with `AdamW`, a warm-up cosine learning-rate schedule, and Focal Loss to focus on the rare laundering class, along with a `WeightedRandomSampler` for balanced batches.
+Early stopping was based on PR-AUC, which was more informative for rare event detection.
 
 <p float="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
 <p align="center"><b>Figure 11. Overview of Transformer Model architecture.</b></p>
 
-<h4 id="Transformer-Preprocess">Preprocess</h4>
-
+<!--
 - Dates and times are merged into a unified timestamp, and temporal features (day, month, year, hour, weekday, weekend) are derived. 
 - The amount feature is log-transformed to stabilize variance. 
 - High-cardinality categorical columns (Sender_account, Receiver_account) are hashed into 50,000 buckets for efficient embedding. 
 - Continuous features are standardized using StandardScaler. 
-
-<h4 id="Transformer-Result">Result</h4>
+-->
 
 ---
 
@@ -277,6 +251,7 @@ Through multi-head self attention residual attention and shared embedding, the T
 
 Traditional rule-based methods have proven inadequate for detecting the sophisticated money laundering patterns prevalent in today's financial system. Recent work has demonstrated that Graph Neural Networks can effectively learn from graph-structured data, achieving substantial improvements in financial fraud detection. Building on these advances, our objective is to develop a Graph Neural Network model that detects money laundering activities with greater than 85% recall while maintaining operational precision, leveraging the explicit network structures embedded in the SAML-D dataset.
 
+<!--
 **Advantages of GNN:**
 
 - **Relational reasoning:** Captures dependencies between account
@@ -288,27 +263,53 @@ We propose to construct a transaction graph where each account represents a node
 
 We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, which enables scalable neighborhood sampling and aggregation for efficient learning on large graphs, and **(2) Graph Attention Networks~(GAT)**, which learn adaptive attention weights over neighbors to identify the most relevant connections for risk assessment and provide interpretability for regulatory compliance.
 
-<h4 id="GNN-Architecture">Architecture</h4>
 
 - GRUCell: The GRUCell layer updates node hidden states by integrating current node features with previous temporal information, capturing sequential dependencies in transaction data.
 - GATConv (GNN1): The first GATConv layer aggregates neighbor information using attention mechanisms, refining node representations based on relevant sender-receiver relationships.
 - GATConv (GNN1): The second GATConv layer further enhances node features through additional message passing, deepening the model's ability to detect complex laundering patterns.
 - Linear (lin): The linear layer combines concatenated sender, receiver, and edge features to produce a single logit for binary edge classification, determining the likelihood of laundering.
+-->
 
-Money laundering is fundamentally a network-based problem, not an individual one. Thus, we implemented a temporal neural network to flag suspicious transactions (see Figure 12). We first convert transactions into graphs using a 7-day window, where each node represents an account, and edges represent the transactions. To prevent data leakage, we only calculated the account-level statistics over that specific time window. Forward pass through the network goes as follows: The model performs a temporal update for each node via GRU cell. This updates node's current state $h_{t-1}$ with current node features ($X_t$), learning node-level temporal dynamics. Next, the proposed hidden state is passed through 3-layer GraphSAGE network. This step updates the node features by a method called message passing. This allows the nodes to learn about their neighbourhood and create a final embedding $h_{t}$. Finally, in the classification step, the model predicts each transaction. The hidden state of the sender node and the hidden state of the receiver node are concatenated with the transaction feature and passed through an MLP. This calculates a single logit, which is compared with the true label to compute a loss function.
+**Temporal Graph Neural Network Architecture**
 
+Money laundering was fundamentally a network-based problem, not an individual one. Thus, we implemented a temporal neural network to flag suspicious transactions (see Figure 12). We first converted transactions into graphs using a 7-day window, where each node represented an account, and edges represented the transactions. To prevent data leakage, we only calculated the account-level statistics over that specific time window. Forward pass through the network went as follows: The model performed a temporal update for each node via GRU cell. This updated node's current state $h_{t-1}$ with current node features ($X_t$), learning node-level temporal dynamics. Next, the proposed hidden state was passed through 3-layer `GraphSAGE` network. This step updated the node features by a method called message passing. This allowed the nodes to learn about their neighborhood and create a final embedding $h_{t}$. Finally, in the classification step, the model predicted each transaction. The hidden state of the sender node and the hidden state of the receiver node were concatenated with the transaction feature and passed through an MLP. This calculated a single logit, which was compared with the true label to compute a loss function.
 
 <p float="center">
   <img src="/Figures/TGNN_diagram.JPG" width="1000" />
 </p>
 <p align="center"><b>Figure 12. Architecture of the Temporal Graph Neural Network (TGNN).</b></p>
 
-<h4 id="GNN-Preprocess">Preprocess</h4>
-
+<!--
 - We aggregate the dataset into seven-day intervals to capture temporal network dynamics and structural patterns, reducing computational overhead during graph-based processing. For each interval, we compute account-level statistics, including transaction frequency, fan-in/fan-out degrees, and median transaction amounts. Transaction amounts are log-transformed to mitigate skewness and enhance the applicability of deep learning models for detecting complex laundering typologies.
 - Edges are constructed based on sender-receiver pairs, incorporating edge attributes like log-transformed amounts, currency mismatch indicators, cross-border flags, and day of week to enrich the relational context.
+-->
 
-<h4 id="GNN-Result">Result</h4>
+---
+
+<h3 id="Conclusion">Conclusion</h3>
+
+<h4 id="Comparison">Model Comparison</h4>
+
+We evaluated model performance using Precision-Recall curves (see Figure 13). While the XGBoost model demonstrated high precision, it suffered from low recall. Both the Transformer and TGNN outperformed XGBoost by achieving higher recall, with TGNN slightly surpassing the Transformer. This likely reflects the graph-structured nature of money laundering behavior, where relational dependencies and transaction topology are critical—highlighting the suitability of graph neural networks for this task.
+
+<p float="center">
+  <img src="/Figures/pr_curve_comparison.JPG" />
+</p>
+<p align="center"><b>Figure 13. Precision-Recall curve between models.</b></p>
+
+We compared model performance using PR-AUC and Recall (see Figure 4). The Transformer model improved PR-AUC by 13.2%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
+
+<p float="center">
+  <img src="/Figures/Model Performance comparison.png" />
+</p>
+<p align="center"><b>Figure 14. Model performance comparison using bar plots: PR-AUC (left) and Recall (right).</b></p>
+
+<h4 id="Future">Real-World Impact and Future Work</h4>
+
+While the Transformer and TGNN models ran slightly slower than XGBoost, their performance gains were substantial. Improved recall can help stakeholders reduce regulatory penalties, protect institutional reputation, and strengthen the integrity of financial operations. Meanwhile, improved precision reduces false alarms, lowering operational costs and minimizing customer disruption.
+
+In conclusion, the Transformer achieved better recall than the XGBoost baseline, though at the cost of lower precision. The TGNN model, however, delivered the strongest gains in both recall and precision, making it a robust and effective choice for modern AML systems. These findings lay a solid foundation for scalable, graph-based approaches in real-world AML environments. Future work will explore hybrid architectures, temporal graph modeling, and real-time inference to further enhance detection capabilities and operational deployment.
+
 
 ---
 
