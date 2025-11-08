@@ -85,7 +85,7 @@ The dataset includes the following 12 features:
 - `Is_laundering`: Target variable indicating whether the transaction is laundering (`1`) or not (`0`)
 - `Laundering_type`: A categorical feature that includes 28 laundering typologies, derived from literature and semi-structured interviews with AML specialists.
 
-<h4 id="EDA">Exploratory Data Analysis</h4>
+<h3 id="EDA">Exploratory Data Analysis</h3>
 
 28 transaction typologies were identified through structured, semi‑structured interviews with eight subject‑matter experts in anti‑money‑laundering. 
 - Eleven typologies were classified as normal: `normal small fan‑out`, `normal fan‑out`, `normal fan‑in`, `normal group`, `normal cash withdrawal`, `normal cash deposit`, `normal periodic`, `normal plus mutual`, `normal mutual`, `normal forward`, and `normal single large`.
