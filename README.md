@@ -30,6 +30,7 @@ Money laundering is the process of conversion of illicit money which comes out o
             <li><a href="#Comparison">Model Comparison</a></li>
             <li><a href="#Future">Real-World Impact and Future Work</li>
         </ul>
+    <li><a href="#Reproducibility">Reproducibility</a></li>
     <li><a href="#References">References</a></li>
     <li><a href="#Code-Description">Code Description</a></li>
 </ul>
@@ -317,6 +318,31 @@ We compared model performance using PR-AUC and Recall (see Figure 14). The Trans
 While the Transformer and TGNN models ran slightly slower than XGBoost, their performance gains were substantial. Improved recall can help stakeholders reduce regulatory penalties, protect institutional reputation, and strengthen the integrity of financial operations. Meanwhile, improved precision reduces false alarms, lowering operational costs and minimizing customer disruption.
 
 In conclusion, the Transformer achieved better recall than the XGBoost baseline, though at the cost of lower precision. The TGNN model, however, delivered the strongest gains in both recall and precision, making it a robust and effective choice for modern AML systems. These findings lay a solid foundation for scalable, graph-based approaches in real-world AML environments. Future work will explore hybrid architectures, temporal graph modeling, and real-time inference to further enhance detection capabilities and operational deployment.
+
+---
+
+<h3 id="Reproducibility">Reproducibility</h3>
+
+To ensure reproducibility, we exported the training, validation, and test splits as Parquet files. Because the dataset was large, the DataFrames were serialized using Polars for faster, memory-efficient I/O. All sets were feature engineered and had their column data types explicitly recast to stable, compact types before export. Links to the Parquet files and checksums are provided below.
+- <a href='https://drive.google.com/file/d/1DkCuWFyPlemcou1IVpYUXy55fasLsw3H/view?usp=sharing'>Training set</a>
+- <a href='https://drive.google.com/file/d/1fo_V9VnDNRfldMc7XL81WLIUodAAGEMO/view?usp=sharing'>Validation set</a>
+- <a href='https://drive.google.com/file/d/1xmr5dM_11Erb5orYbQYD4mkaJz2sv-lG/view?usp=sharing'>Test set</a>
+
+Importing Parquet Files in Google Colab:
+
+```
+from google.colab import drive
+drive.mount('/content/drive')
+drive_path = '/content/drive/MyDrive/Colab Notebooks/'
+
+import polars as pl
+import os
+
+df_train = pl.read_parquet(os.path.join(drive_path, "df_train.parquet"))
+df_val = pl.read_parquet(os.path.join(drive_path, "df_val.parquet"))
+df_test = pl.read_parquet(os.path.join(drive_path, "df_test.parquet"))
+
+```
 
 
 ---
