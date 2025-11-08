@@ -296,7 +296,7 @@ Money laundering was fundamentally a network-based problem, not an individual on
 
 <h4 id="Comparison">Model Comparison</h4>
 
-We evaluated model performance using Precision-Recall curves (see Figure 13). While the XGBoost model demonstrated high precision, it suffered from low recall. Both the Transformer and TGNN outperformed XGBoost by achieving higher recall, with TGNN slightly surpassing the Transformer. This likely reflects the graph-structured nature of money laundering behavior, where relational dependencies and transaction topology are critical—highlighting the suitability of graph neural networks for this task.
+We evaluated model performance using Precision-Recall curves (see Figure 13). While the XGBoost model demonstrated high precision, it suffered from low recall. Both the Transformer and TGNN outperformed XGBoost by achieving higher recall, with TGNN surpassing the Transformer. This likely reflects the graph-structured nature of money laundering behavior, where relational dependencies and transaction topology are critical—highlighting the suitability of graph neural networks for this task.
 
 <p float="center">
   <img src="/Figures/pr_curve_comparison.png" />
