@@ -271,10 +271,12 @@ We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, whic
 
 
 - GRUCell: The GRUCell layer updates node hidden states by integrating current node features with previous temporal information, capturing sequential dependencies in transaction data.
-- GATConv (GNN1): The first GATConv layer aggregates neighbor information using attention mechanisms, refining node representations based on relevant sender-receiver relationships.
-- GATConv (GNN1): The second GATConv layer further enhances node features through additional message passing, deepening the model's ability to detect complex laundering patterns.
-- Linear (lin): The linear layer combines concatenated sender, receiver, and edge features to produce a single logit for binary edge classification, determining the likelihood of laundering.
--->
+- GraphSAGE: We use 3-layer GraphSAGE to perform neighborhood aggregation, allowing nodes to learn from their local graph structure and neighboring nodes' features.
+- MLP for Classification: The MLP consists of:
+  - Linear Layer
+  - ReLU Activation
+  - Dropout
+  - Linear Layer
 
 **Temporal Graph Neural Network Architecture**
 

@@ -5,8 +5,12 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from sklearn.metrics import fbeta_score
-from model import create_model
-from utils import FocalLoss, load_config
+try:
+    from model import create_model
+    from utils import FocalLoss, load_config
+except ImportError:
+    from src.model import create_model
+    from src.utils import FocalLoss, load_config
 from sklearn.metrics import recall_score
 import json
 import numpy as np
@@ -35,19 +39,9 @@ class ModelTrainer:
                 best_f2 = f2
                 best_threshold = threshold
         return best_threshold, best_f2
-    
-    def train_model(self, snapshots, global_num_nodes):
+
+    def train_model(self, train_snapshots, val_snapshots, global_num_nodes):
         """Enhanced training with F2 optimization"""
-        
-        # Split data
-        train_size = int(len(snapshots) * (1 - self.config['preprocessing']['validation_split'] - self.config['preprocessing']['test_split']))
-        val_size = int(len(snapshots) * self.config['preprocessing']['validation_split'])
-
-        train_snaps = snapshots[:train_size]
-        val_snaps = snapshots[train_size:train_size + val_size]
-        test_snaps = snapshots[train_size + val_size:]
-
-        logger.info(f"Data split - Train: {len(train_snaps)}, Val: {len(val_snaps)}, Test: {len(test_snaps)}")
 
         # Initialize model
         model = create_model(self.config).to(self.device)
@@ -90,14 +84,14 @@ class ModelTrainer:
             optimizer.zero_grad()
             chunk_loss = 0.0
 
-            for i, snap in enumerate(train_snaps):
+            for i, snap in enumerate(train_snapshots):
                 snap = snap.to(self.device)
                 out, h = model(snap, h)      # Forward pass
                 loss = criterion(out.squeeze(), snap.y)  # Loss computation
                 chunk_loss += loss
 
                 # Backpropagation every k_steps
-                if (i + 1) % k_steps == 0 or (i + 1) == len(train_snaps):
+                if (i + 1) % k_steps == 0 or (i + 1) == len(train_snapshots):
                     chunk_loss /= k_steps
                     # Backward pass
                     chunk_loss.backward()
@@ -111,8 +105,8 @@ class ModelTrainer:
 
                 # Total epoch loss
                 train_loss += loss.item()
-            
-            avg_train_loss = train_loss / len(train_snaps)
+
+            avg_train_loss = train_loss / len(train_snapshots)
             train_loss_history.append(avg_train_loss)
             
             # Validation
@@ -122,7 +116,7 @@ class ModelTrainer:
             
             with torch.no_grad():
                 h = torch.zeros(global_num_nodes, self.config['model']['hidden_dim']).to(self.device)
-                for snap in val_snaps:
+                for snap in val_snapshots:
                     snap = snap.to(self.device)
                     out, h = model(snap, h)
                     loss = criterion(out.squeeze(), snap.y)
@@ -131,8 +125,8 @@ class ModelTrainer:
                     preds = torch.sigmoid(out).squeeze()
                     val_probs_list.append(preds.cpu())
                     val_labels_list.append(snap.y.cpu())
-            
-            avg_val_loss = val_loss / len(val_snaps)
+
+            avg_val_loss = val_loss / len(val_snapshots)
             val_loss_history.append(avg_val_loss)
             
             # Calculate F2 score with optimal threshold
@@ -183,9 +177,18 @@ def main():
     snapshots = torch.load('data/temporal_graph_snapshots.pth')
     graph_info = torch.load('data/graph_info.pth')
 
+    # Data splitting
+    train_size = int(len(snapshots) * (1 - config['preprocessing']['validation_split'] - config['preprocessing']['test_split']))
+    val_size = int(len(snapshots) * config['preprocessing']['validation_split'])
+
+    train_snaps = snapshots[:train_size]
+    val_snaps = snapshots[train_size:train_size + val_size]
+    # test_snaps = snapshots[train_size + val_size:]
+    logger.info(f"Data split - Train: {len(train_snaps)}, Val: {len(val_snaps)})")
+
     # Trainer
     trainer = ModelTrainer(config)
-    results = trainer.train_model(snapshots, graph_info['num_nodes'])
+    results = trainer.train_model(train_snaps, val_snaps, graph_info['num_nodes'])
 
     # Save the trained model
     Path('results').mkdir(parents=True, exist_ok=True)

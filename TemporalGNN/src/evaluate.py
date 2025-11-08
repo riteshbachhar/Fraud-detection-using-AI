@@ -3,8 +3,12 @@ import logging
 from pathlib import Path
 from pyexpat import model
 import torch
-from model import create_model
-from utils import load_config
+try:
+    from model import create_model
+    from utils import load_config
+except ImportError:
+    from src.model import create_model
+    from src.utils import load_config
 from sklearn.metrics import fbeta_score, recall_score
 from sklearn.metrics import precision_score, roc_auc_score, average_precision_score
 import numpy as np
@@ -44,7 +48,7 @@ class ModelEvaluator:
         
         return best_threshold, best_f2
     
-    def evaluate_model(self, model, snapshots, global_num_nodes, split_name='test', threshold=None):
+    def evaluate_model(self, model, snapshots, global_num_nodes, split_name='test', threshold=None, plot=True):
         """Comprehensive model evaluation
         split_name: 'val', or 'test'
         """
@@ -90,10 +94,11 @@ class ModelEvaluator:
         logger.info(f"Precision: {metrics['precision']:.4f}")
         logger.info(f"Recall: {metrics['recall']:.4f}")
         logger.info(f"PR-AUC: {metrics['pr_auc']:.4f}")
-        
-        # Generate plots
-        self.plot_results(probs, labels, binary_preds, split_name)
-        
+
+        if plot:
+            # Generate plots
+            self.plot_results(probs, labels, binary_preds, split_name)
+
         return metrics, probs, labels
 
     def plot_results(self, probs, labels, preds, split_name):
@@ -134,7 +139,7 @@ def main():
     snapshots = torch.load('data/temporal_graph_snapshots.pth')
     graph_info = torch.load('data/graph_info.pth')
 
-    # Split data (Same )
+    # Split data (Same as training)
     train_size = int(len(snapshots) * (1 - config['preprocessing']['validation_split'] - config['preprocessing']['test_split']))
     val_size = int(len(snapshots) * config['preprocessing']['validation_split'])
 
@@ -145,7 +150,7 @@ def main():
     # Validation set evaluation
     val_snapshots = snapshots[train_size: train_size + val_size]
     val_metrics, val_probs, val_labels = evaluator.evaluate_model(
-        model, val_snapshots, graph_info['num_nodes'], 'val'
+        model, val_snapshots, graph_info['num_nodes'], 'val', plot=True
     )
     # Save results
     with open(f'results/val_metrics.json', 'w') as f:
@@ -157,7 +162,7 @@ def main():
     threshold = val_metrics['threshold']
     test_snapshots = snapshots[train_size + val_size:]
     test_metrics, test_probs, test_labels = evaluator.evaluate_model(
-        model, test_snapshots, graph_info['num_nodes'], 'test', threshold=threshold
+        model, test_snapshots, graph_info['num_nodes'], 'test', threshold=threshold, plot=True
     )
 
     # Save results
