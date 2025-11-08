@@ -2,7 +2,7 @@
 
 <h3>Team Members: Heba Bou KaedBey, Min Shi, Ritesh Bachhar, Khanh Nguyen </h3>
 
-Define Problem: Money laundering is the process of conversion of illicit money which comes out of the crime which is then intermixed with the licit money to make appear legitimate, and it becomes very difficult to distinguish the legitimate money from the illegitimate one.
+Money laundering is the process of conversion of illicit money which comes out of the crime which is then intermixed with the licit money to make appear legitimate, and it becomes very difficult to distinguish the legitimate money from the illegitimate one.
 
 
 
@@ -39,9 +39,10 @@ As laundering schemes grow increasingly sophisticated, the need for robust, data
 
 Money laundering typically unfolds in three stages: placement, layering, and integration (see Figure 1). While the placement and integration phases are often concealed and difficult to detect, the layering stage, characterized by a series of transactions between accounts, is more amenable to scrutiny. This phase presents a critical opportunity for intervention, as it involves the movement and transformation of funds designed to break the audit trail. With global laundering estimated at 2–5% of GDP ($800B–$2T), the stakes are high. High-recall detection is not merely desirable—it is essential for identifying suspicious patterns early, minimizing false negatives, and enabling timely escalation to investigative teams. In this context, precision can be sacrificed to ensure that potentially illicit activity is flagged, even at the cost of increased review workload.
 
+<!--
 In this project, our objective is to develop deep learning models using the SAML-D dataset to identify suspicious financial transactions. We aim to reduce false positives while enhancing recall within anti-money laundering (AML) systems. Additionally, we plan to explore the use of OpenAI's GPT to generate natural language explanations for each flagged transaction, improving interpretability for compliance teams. If time permits, we will deploy the solution to AWS, likely leveraging S3 for storage and scalability.
 
-<!-- Fraud and money laundering continue to burden financial institutions, with indirect costs far exceeding direct losses. In North America, each dollar lost to fraud cost firms $4.45 in 2023, factoring in investigation, recovery, and reputational harm. Meanwhile, Panama Papers and Swiss leaks spotlighted how offshore structures facilitate laundering, blending illicit funds with legitimate ones to obscure their origin. As schemes become more sophisticated, robust data-driven models are essential for timely detection and prevention.
+Fraud and money laundering continue to burden financial institutions, with indirect costs far exceeding direct losses. In North America, each dollar lost to fraud cost firms $4.45 in 2023, factoring in investigation, recovery, and reputational harm. Meanwhile, Panama Papers and Swiss leaks spotlighted how offshore structures facilitate laundering, blending illicit funds with legitimate ones to obscure their origin. As schemes become more sophisticated, robust data-driven models are essential for timely detection and prevention.
 
 **Goal:** Build a deep learning model on SAML-D to detect suspicious financial transactions, reducing false positives while improving recall in anti-money laundering systems. We also want to try using OpenAI’a GPT to generate natural language explanations for each flagged transaction. And if time permits deploy to AWS (probably S3). -->
 
@@ -50,6 +51,8 @@ In this project, our objective is to develop deep learning models using the SAML
 </p>
 <p align="center"><b>Figure 1. Three stages of Money Laundering Cycle.
 </b></p>
+
+In this project, our objective is to develop deep learning models using the SAML-D dataset to identify suspicious financial transactions. We aim to reduce false positives while enhancing recall within anti-money laundering (AML) systems, contributing to more effective and scalable detection frameworks.
 
 ---
 
@@ -157,8 +160,6 @@ This temporal splitting strategy serves two purposes:
 ---
 
 <h3 id="Baseline">Baseline Model: XGBoost</h3>
-
-<h4 id="Baseline-Architecture">Architecture</h4>
 
 We selected XGBoost as our baseline for its resistance to overfitting: its tree‑based architecture handles outliers well, and built‑in regularization and shrinkage mitigate overfitting on noisy transactional data.
 
@@ -297,7 +298,7 @@ We evaluated model performance using Precision-Recall curves (see Figure 13). Wh
 </p>
 <p align="center"><b>Figure 13. Precision-Recall curve between models.</b></p>
 
-We compared model performance using PR-AUC and Recall (see Figure 4). The Transformer model improved PR-AUC by 13.2%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
+We compared model performance using PR-AUC and Recall (see Figure 14). The Transformer model improved PR-AUC by 13.2%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
 
 <p float="center">
   <img src="/Figures/Model Performance comparison.png" />
