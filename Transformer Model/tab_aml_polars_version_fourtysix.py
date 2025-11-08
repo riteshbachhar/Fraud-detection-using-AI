@@ -10,10 +10,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.metrics import (
-    roc_auc_score, precision_recall_curve, auc as auc_metric,
+from sklearn.metrics import (roc_auc_score, precision_recall_curve, auc as auc_metric,
     recall_score, precision_score, f1_score, confusion_matrix,)
-
+from sklearn.metrics import fbeta_score
 
 # Utility
 
@@ -59,17 +58,11 @@ class FocalLoss(nn.Module):
         return loss.mean()
 
 
-def compute_pos_weight(y_series: pl.Series) -> float:
-    """Compute positive-class weight for BCE loss."""
-    y = y_series.to_numpy()
-    p = int((y == 1).sum())
-    n = int((y == 0).sum())
-    return max(n / max(p, 1), 1.0)
 
 
 # Sampler
 
-def build_weighted_sampler(labels: pl.Series, power: float = 0.8) -> WeightedRandomSampler:
+def build_weighted_sampler(labels: pl.Series, power: float = 0.7) -> WeightedRandomSampler:
     """Weighted sampler for imbalance control."""
     y = labels.to_numpy()
     unique, counts = np.unique(y, return_counts=True)
@@ -319,42 +312,18 @@ def evaluate(model, loader, loss_fn, device, threshold=0.5):
     tn, fp, fn, tp = confusion_matrix(y_all, preds).ravel().tolist()
     return avg_loss, auc_roc, auc_pr, rec_v, prec_v, f1_v, (tn, fp, fn, tp)
 
-@torch.no_grad()
-def pick_threshold_by(val_loader, model, device, criterion="f1", min_precision=None):
-    """
-    Determine best probability threshold using validation set.
-    """
-    model.eval()
-    y_all, p_all = [], []
+def find_optimal_threshold(probs, labels, beta=2,
+                           threshold_search_range=np.arange(0.05, 0.95, 0.05)):
+    best_f2 = -1
+    best_threshold = 0.5
 
-    for batch in val_loader:
-        x_cat = batch.x_cat.to(device)
-        x_cont = batch.x_cont.to(device)
-        y = batch.y.to(device)
+    for threshold in threshold_search_range:
+        preds = (probs >= threshold).astype(int)
+        f2 = fbeta_score(labels, preds, beta=beta, average="binary", zero_division=0)
+        if f2 > best_f2:
+            best_f2 = f2
+            best_threshold = threshold
 
-        #Ensure probabilities are 1D
-        p = torch.sigmoid(model(x_cat, x_cont)).squeeze(-1).cpu().numpy()
+    return best_threshold, best_f2
 
-        y_all.extend(y.cpu().numpy())
-        p_all.extend(p)
-
-    y_all = np.array(y_all)
-    p_all = np.array(p_all)
-
-    prec, rec, thr = precision_recall_curve(y_all, p_all)
-
-    if criterion == "f1":
-        f1 = 2 * prec * rec / (prec + rec + 1e-12)
-        best_idx = np.argmax(f1)
-
-    elif criterion == "recall_at_precision":
-        assert min_precision is not None, "min_precision must be given"
-        valid = np.where(prec >= min_precision)[0]
-        best_idx = valid[np.argmax(rec[valid])] if len(valid) else np.argmax(rec)
-
-    else:
-        raise ValueError("criterion must be 'f1' or 'recall_at_precision'")
-
-    best_thr = thr[max(best_idx - 1, 0)]
-    return float(best_thr), float(prec[best_idx]), float(rec[best_idx])
 
