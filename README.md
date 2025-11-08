@@ -1,3 +1,8 @@
+[Erdős Institute Deep Learning Science Boot Camp], Fall 2025.
+
+- View our 5 mins [presentation]()
+
+
 <h1> Deep Learning for Anti-Money Laundering: Detecting Suspicious Transactions </h1>
 
 <h3>Team Members: Heba Bou KaedBey, Min Shi, Ritesh Bachhar, Khanh Nguyen </h3>
