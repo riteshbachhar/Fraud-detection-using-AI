@@ -1,6 +1,6 @@
 [Erdős Institute Deep Learning Boot Camp](https://www.erdosinstitute.org/programs/fall-2025/deep-learning-boot-camp), Fall 2025.
 
-- View our 5 mins [presentation]()
+- View our 5 mins [presentation](will update this later once we have link)
 
 
 <h1> Deep Learning for Anti-Money Laundering: Detecting Suspicious Transactions </h1>
