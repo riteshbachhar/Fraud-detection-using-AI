@@ -1,4 +1,4 @@
-[Erdős Institute Deep Learning Science Boot Camp], Fall 2025.
+[Erdős Institute Deep Learning Boot Camp](https://www.erdosinstitute.org/programs/fall-2025/deep-learning-boot-camp), Fall 2025.
 
 - View our 5 mins [presentation]()
 
