@@ -250,7 +250,7 @@ The limitation with XGBoost is that it treated each feature independently, but l
 
 **Transformer architecture**
 
-The architecture uses a two stage attention design (see figure 11):
+The architecture uses a two stage attention design (see Figure 11):
 - <strong> Micro_Attention </strong>: focuses specifically on the relationship between the Sender and the Receiver account embeddings. This allow the model to learn behavioral signatures like repeated transfers, circular flows, or sudden pattern changes.
 - <strong> Macro_Attention </strong>: aggregates information across all transactions features, allowing the model to capture broader context such as currency behavior, geographical routing and temporal patterns.
 
