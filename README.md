@@ -72,7 +72,7 @@ The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-m
 <p align="center"><b>Figure 2. The data is highly imbalanced, with only 0.1% of transactions labeled as suspicious.
 </b></p>
 
-The dataset includes the following 12 features:
+The dataset includes the following 11 features and 1 target variable:
 
 - `Time`: Time of transaction, formatted as HH:MM:ss
 - `Date`: Date of transaction, formatted as YYYY:MM:DD; ranges from October 6, 2022 to August 22, 2023
@@ -257,7 +257,7 @@ Because laundering cases are extremely rare, training uses:
 - <strong> Scheduler </strong> Tested both <strong Warm-up +Cosine Decay </strong> and <strong> ReduceLROnPlateau </strong> for learning-rate scheduling.
 The validation-driven adaptation of <strong> ReduceLROnPlateau </strong> provided more stable convergence, so it was chosen as the final scheduling strategy. 
 
-<p float="center">
+<p align="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
 <p align="center"><b>Figure 11. Overview of Transformer Model architecture.</b></p>
@@ -362,6 +362,20 @@ df_test = pl.read_parquet(os.path.join(drive_path, "df_test.parquet"))
 
 ```
 
+Besides the original 11 features and the target variable `Is_laundering`, the provided DataFrames include the following additional features.
+- Categorical features (binary: 0 or 1): `currency_mismatch`, `cross_border`, `high_risk_sender`, `high_risk_receiver`
+- Continuous features: `fanin_30d`, `fan_in_out_ratio`, `fanin_intensity_ratio`, `amount_dispersion_std`, `sent_to_received_ratio_monthly`, `back_and_forth_transfers`, `daily_receiver_transaction`, `weekly_receiver_transaction`, `daily_sender_transaction`, `weekly_sender_transaction`, `circular_transaction_count`
+  
+Additional notes:
+- The `Amount` feature was converted to log scale prior to export.
+- These features were used to train both an XGBoost model and a Transformer model.
+- The Transformer model also used an additional feature, `is_weekend`, which was not included in the exported DataFrames. To reproduce the Transformer experiments, add an is_weekend column as shown below.
+
+```
+df_train.with_columns([df_train["Date"].dt.weekday().is_in([5, 6]).alias("is_weekend")])
+df_val.with_columns([df_val["Date"].dt.weekday().is_in([5, 6]).alias("is_weekend")])
+df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weekend")])
+```
 
 ---
 
