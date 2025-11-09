@@ -238,8 +238,8 @@ The limitation with XGBoost is that it treated each feature independently, but l
 
 **Transformer architecture**
 
-The transformer model was tailored for tabular financial data to detect money-laundering transactions. It featured a two-stage attention mechanism: `micro-attention` layer that learns relationships between sender and receiver accounts, and `macro-attention` layer that captured global dependencies across all transaction features (see Figure 11). Each attention block included residual connections, layer normalization, and dropout to prevent overfitting. Continuous features were processed through a small feed-forward network and then combined with categorical embeddings before classification through a multilayer perceptron. The model was trained with `AdamW`, a warm-up cosine learning-rate schedule, and Focal Loss to focus on the rare laundering class, along with a `WeightedRandomSampler` for balanced batches.
-Early stopping was based on PR-AUC, which was more informative for rare event detection.
+The architecture uses a two stage attention design:
+- <strong> Micro_Attention <strong>:
 
 <p float="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
