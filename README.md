@@ -348,7 +348,23 @@ Our model was a **recurrent spatio-temporal GNN**, designed to analyze a sequenc
   - **Training Time:** The model was trained for 100 epochs, using **Truncated Backpropagation Through Time (TBPTT)**, with a chuck size of 4 snapshots to manage memory and gradient flow. Total training time was approximately 15 minutes on a single NVIDIA A100 GPU.
 
 **Results**
-Our model trained successfully, with validation and training losses decreasing steadily over epochs, indicating the model learned effectively without overfitting. In evaluating performance, we focused on the Precision-Recall (PR) Curve due to the severe class imbalance. Our Temporal GNN achieved a high Area Under the PR-Curve of **0.85, significantly outperforming baseline XGBoost model**. At the threshold of 0.4, our model correctly identified **1352** of laundering transactions with a precision of **81%**. Most importantly, it reduced the **False Negative** -- the missed laundering cases -- to just **289**, demonstrating its practical utility in real-world AML scenarios.
+Our model trained successfully, with validation and training losses decreasing steadily over epochs, indicating the model learned effectively without overfitting. In evaluating performance, we focused on the Precision-Recall (PR) Curve due to the severe class imbalance.
+
+Our Temporal GNN achieved an **Area Under the PR-Curve (AUPRC) of 0.85**, significantly outperforming our baseline XGBoost model. This demonstrates its superior ability to handle the complex, imbalanced nature of this data.
+
+<p float="center">
+  <img src="/Figures/training_validation_loss_tgnn.png" width="350" />
+  <img src="/Figures/confusion_matrix_tgnn.png" width="450" />
+</p>
+<p align="center"><b>Figure 13. Traning and validation loss curves (left) and confusion matrix on test set (right) for the Temporal Graph Neural Network (TGNN).
+</b></p>
+
+When deployed at an operating threshold of 0.4, the model's performance on the test set is as follows:
+
+* It achieved a **precision of 81%**, correctly identifying **1,337** laundering transactions.
+* Most critically, it reduced **False Negatives**—the *missed* laundering cases—to just **304**.
+
+This low number of missed cases demonstrates the model's high recall and practical effectiveness for real-world AML scenarios.
 
 ---
 
@@ -361,14 +377,14 @@ We evaluated model performance using Precision-Recall curves (see Figure 13). Wh
 <p float="center">
   <img src="/Figures/pr_curve_comparison.png" />
 </p>
-<p align="center"><b>Figure 13. Precision-Recall curve between models.</b></p>
+<p align="center"><b>Figure 14. Precision-Recall curve between models.</b></p>
 
 We compared model performance using PR-AUC and Recall (see Figure 14). The Transformer model improved PR-AUC by 14.6%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
 
 <p float="center">
   <img src="/Figures/Model Performance comparison.png" />
 </p>
-<p align="center"><b>Figure 14. Model performance comparison using bar plots: PR-AUC (left) and Recall (right).</b></p>
+<p align="center"><b>Figure 15. Model performance comparison using bar plots: PR-AUC (left) and Recall (right).</b></p>
 
 <h4 id="Future">Real-World Impact and Future Work</h4>
 
