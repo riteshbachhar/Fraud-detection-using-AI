@@ -1,7 +1,7 @@
 [Erdős Institute Deep Learning Boot Camp](https://www.erdosinstitute.org/programs/fall-2025/deep-learning-boot-camp), Fall 2025.
 
 - View our 5 mins [presentation](will update this later once we have link)
-- PS: Though for the transformer we tried two schedulers, but in the video, on slide 4, scheduler chosen is ReduceLROnPlateau and not Warm-up + Cosine Decay. 
+- PS: For the transformer we tried two schedulers, but in the 5 mins presentation, specifically on slide 4, the chosen scheduler is ReduceLROnPlateau and not Warm-up + Cosine Decay. 
 
 
 <h1> Deep Learning for Anti-Money Laundering: Detecting Suspicious Transactions </h1>
