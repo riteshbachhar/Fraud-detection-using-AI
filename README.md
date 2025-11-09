@@ -273,11 +273,23 @@ The validation-driven adaptation of <strong> ReduceLROnPlateau </strong> provide
 
 <h3 id="GNN">Graph Neural Network</h3>
 
-Traditional rule-based methods have proven inadequate for detecting the sophisticated money laundering patterns prevalent in today's financial system. Recent work has demonstrated that Graph Neural Networks can effectively learn from graph-structured data, achieving substantial improvements in financial fraud detection. Building on these advances, our objective is to develop a Graph Neural Network model that detects money laundering activities with greater than 85% recall while maintaining operational precision, leveraging the explicit network structures embedded in the SAML-D dataset.
+Money laundering is a dynamic, network-based problem. A single transaction might look innocent, but the crime is hidden in the network of accounts and the sequence of transactions over time. To tackle this, we've implemented a Temporal Graph Neural Network designed to capture both of these dimensions at once.
 
 **Temporal Graph Neural Network Architecture**
 
-Money laundering was fundamentally a network-based problem, not an individual one. Thus, we implemented a temporal neural network to flag suspicious transactions (see Figure 12). We first converted transactions into graphs using a 7-day window, where each node represented an account, and edges represented the transactions. To prevent data leakage, we only calculated the account-level statistics over that specific time window. Forward pass through the network went as follows: The model performed a temporal update for each node via GRU cell. This updated node's current state $h_{t-1}$ with current node features ($X_t$), learning node-level temporal dynamics. Next, the proposed hidden state was passed through 3-layer `GraphSAGE` network. This step updated the node features by a method called message passing. This allowed the nodes to learn about their neighborhood and create a final embedding $h_{t}$. Finally, in the classification step, the model predicted each transaction. The hidden state of the sender node and the hidden state of the receiver node were concatenated with the transaction feature and passed through an MLP. This calculated a single logit, which was compared with the true label to compute a loss function.
+Our model is a **recurrent spatio-temporal GNN**, designed to analyze a sequence of graph snapshots. The forward pass for each snapshot consists of three main stages:
+
+1.  **Temporal Update (RNN):** First, each node's "memory" is updated. A **GRU cell** takes the node's hidden state from the previous snapshot ($h_{t-1}$) and combines it with its features from the *current* snapshot ($x_t$). This produces a "proposed" hidden state ($h'_{t}$) that captures the node's individual temporal patterns.
+
+2.  **Spatial Update (GNN):** Next, these "proposed" states are passed through a **3-layer GraphSAGE network**. This performs spatial message passing, where each node aggregates the states of its neighbors. Stacking three layers allows the model to "see" up to 3 hops away, so the final node embedding ($h_t$) is spatially-aware and contains information from its local network neighborhood.
+
+3.  **Edge-Level Classification (MLP):** Finally, to make a prediction for a specific transaction (edge), the model **concatenates** three vectors:
+    * The final embedding of the **sender node ($h_i$)**
+    * The final embedding of the **receiver node ($h_j$)**
+    * The features of the **transaction itself ($edge\_{attr}$)**
+
+    This combined vector is fed into a multi-layer perceptron (MLP) that outputs a single "fraud score" (logit), which is then used to compute the loss.
+
 
 <p float="center">
   <img src="/Figures/TGNN_diagram.JPG" width="1000" />
