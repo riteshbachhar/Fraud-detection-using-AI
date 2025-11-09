@@ -276,7 +276,6 @@ Since Money laundering is a rare class, the default threshold of 0.5 is not opti
 Optimal threshold found on validation:
 Threshold = 0.3000 | Best F2 = 0.6452
 
-Using this tuned threshold on the test set:
 
 <table style="border-collapse:collapse; width:420px; font-family:Arial, sans-serif;">
   <caption style="caption-side:top; font-weight:bold; margin-bottom:6px;">
@@ -304,6 +303,7 @@ Using this tuned threshold on the test set:
   </tbody>
 </table>
 
+Note: The exact metric values shown (Precision = 0.6492, Recall = 0.5993, F1 = 0.6233) may differ slightly from those in the training notebook. This is expected. The model contains stochastic components (random weight initialization, shuffled mini-batches, and weighted sampling), so each training run can converge to slightly different local optima. The performance is stable in trend (high precision with moderate recall), even if the exact numbers vary by a few points.
 
 <p align="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
