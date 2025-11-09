@@ -350,21 +350,21 @@ Our model was a **recurrent spatio-temporal GNN**, designed to analyze a sequenc
 **Results**
 Our model trained successfully, with validation and training losses decreasing steadily over epochs, indicating the model learned effectively without overfitting. In evaluating performance, we focused on the Precision-Recall (PR) Curve due to the severe class imbalance.
 
-Our Temporal GNN achieved an **Area Under the PR-Curve (AUPRC) of 0.85**, significantly outperforming our baseline XGBoost model. This demonstrates its superior ability to handle the complex, imbalanced nature of this data.
+Our Temporal GNN achieved an **Area Under the PR-Curve (AUPRC) of 0.85**, significantly outperforming our baseline XGBoost model. This demonstrated its superior ability to handle the complex, imbalanced nature of this data.
 
 <p float="center">
-  <img src="/Figures/training_validation_loss_tgnn.png" width="350" />
-  <img src="/Figures/confusion_matrix_tgnn.png" width="320" />
+  <img src="/Figures/training_validation_loss_tgnn.png" width="400" />
+  <img src="/Figures/confusion_matrix_tgnn.png" width="400" />
 </p>
 <p align="center"><b>Figure 13. Traning and validation loss curves (left) and confusion matrix on test set (right) for the Temporal Graph Neural Network (TGNN).
 </b></p>
 
-When deployed at an operating threshold of 0.4, the model's performance on the test set is as follows:
+When deployed at an operating threshold of 0.4, the model's performance on the test set was as follows:
 
 * It achieved a **precision of 81%**, correctly identifying **1,337** laundering transactions.
 * Most critically, it reduced **False Negatives**—the *missed* laundering cases—to just **304**.
 
-This low number of missed cases demonstrates the model's high recall and practical effectiveness for real-world AML scenarios.
+This low number of missed cases demonstrated the model's high recall and practical effectiveness for real-world AML scenarios.
 
 ---
 
@@ -372,14 +372,14 @@ This low number of missed cases demonstrates the model's high recall and practic
 
 <h4 id="Comparison">Model Comparison</h4>
 
-We evaluated model performance using Precision-Recall curves (see Figure 13). While the XGBoost model demonstrated high precision, it suffered from low recall. Both the Transformer and TGNN outperformed XGBoost by achieving higher recall, with TGNN surpassing the Transformer. This likely reflected the graph-structured nature of money laundering behavior, where relational dependencies and transaction topology are critical—highlighting the suitability of graph neural networks for this task.
+We evaluated model performance using Precision-Recall curves (see Figure 14). While the XGBoost model demonstrated high precision, it suffered from low recall. Both the Transformer and TGNN outperformed XGBoost by achieving higher recall, with TGNN surpassing the Transformer. This likely reflected the graph-structured nature of money laundering behavior, where relational dependencies and transaction topology are critical—highlighting the suitability of graph neural networks for this task.
 
 <p float="center">
   <img src="/Figures/pr_curve_comparison.png" />
 </p>
 <p align="center"><b>Figure 14. Precision-Recall curve between models.</b></p>
 
-We compared model performance using PR-AUC and Recall (see Figure 14). The Transformer model improved PR-AUC by 14.6%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
+We compared model performance using PR-AUC and Recall (see Figure 15). The Transformer model improved PR-AUC by 14.6%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
 
 <p float="center">
   <img src="/Figures/Model Performance comparison.png" />
