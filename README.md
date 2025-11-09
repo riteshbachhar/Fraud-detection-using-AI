@@ -93,7 +93,7 @@ The dataset includes the following 11 features and 1 target variable:
 - Eleven typologies were classified as normal: `normal small fan‑out`, `normal fan‑out`, `normal fan‑in`, `normal group`, `normal cash withdrawal`, `normal cash deposit`, `normal periodic`, `normal plus mutual`, `normal mutual`, `normal forward`, and `normal single large`.
 - Seventeen were classified as suspicious: `structuring`, `cash withdrawal`, `deposit‑send`, `smurfing`, `layered fan‑in`, `layered fan‑out`, `stacked bipartite`, `behavioral change 1`, `behavioral change 2`, `bipartite`, `cycle`, `fan‑in`, `gather‑scatter`, `scatter‑gather`, `single large`, `fan‑out`, `and over‑invoicing`.
 
-The top 20 laundering types by log count highlight `structuring`, `cash withdrawal`, `deposit‑send`, and `smurfing` as the most frequent suspicious typologies (see Figure 3). By median log amount, `over‑invoicing` dominates the chart and `single large` ranked among the top three, showing that high‑magnitude events drive a different signal than high‑frequency events. Together, these patterns show that frequency‑based and magnitude‑based indicators capture distinct risk strata and therefore both should be incorporated into the detection pipeline.
+The top 20 laundering types by log count highlight `structuring`, `cash withdrawal`, `deposit‑send`, and `smurfing` as the most frequent suspicious typologies (see Figure 3). By median log amount, `over‑invoicing` dominated the chart and `single large` ranked among the top three, showing that high‑magnitude events drive a different signal than high‑frequency events. Together, these patterns showed that frequency‑based and magnitude‑based indicators captured distinct risk strata and therefore both should be incorporated into the detection pipeline.
 
 <p float="center">
   <img src="/Figures/laundering_type.png" width="1000" />
@@ -111,7 +111,7 @@ We then examined sender and receiver locations. The majority of both senders and
 <p align="center"><b>Figure 4. Histograms of receiver bank locations (top) and sender bank locations (bottom).
 </b></p>
 
-Most of the top 20 money‑transfer routes are domestic (UK → UK), but the top‑20 list also includes several UK → designated high‑risk‑country corridors, indicating concentrated outbound flows along specific cross‑border routes. To better understand cross‑border behavior, we examined currency mismatches: among the top 20 currency pairs only GBP → GBP is a same‑currency pair; all other top pairs involved currency conversion. Currency conversion therefore appeared to be a persistent characteristic of high‑volume corridors and may interact with typology and routing signals to reveal elevated risk (see Figure 5).
+Most of the top 20 money‑transfer routes were domestic (UK → UK), but the top‑20 list also included several UK → designated high‑risk‑country corridors, indicating concentrated outbound flows along specific cross‑border routes. To better understand cross‑border behavior, we examined currency mismatches: among the top 20 currency pairs only GBP → GBP is a same‑currency pair; all other top pairs involved currency conversion. Currency conversion therefore appeared to be a persistent characteristic of high‑volume corridors and may interact with typology and routing signals to reveal elevated risk (see Figure 5).
 
 <p float="center">
   <img src="/Figures/top_20_money_transfer.png" width="1000" />
@@ -122,9 +122,9 @@ Most of the top 20 money‑transfer routes are domestic (UK → UK), but the top
 
 <h4 id="Features">Time‑Based and Graph‑Inspired Feature Engineering</h4>
 
-From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
+From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These included: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allowed the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
 
-We created the following binary categorical features, where each feature takes the value 1 when the condition is true and 0 otherwise:
+We created the following binary categorical features, where each feature took the value 1 when the condition is true and 0 otherwise:
 - `currency_mismatch`: 1 if `Payment_currency` differed from `Received_currency`, 0 otherwise.
 - `cross_border`: 1 if `Payment_type` equaled `Cross-border`, 0 otherwise.
 - `high_risk_sender`: 1 if `Sender_bank_location` was in the high‑risk country list, 0 otherwise.
@@ -168,14 +168,13 @@ We excluded the `Sender_account` and `Receiver_account` columns from this recast
 
 <h4 id="Train-Test-split">Custom Train-test split</h4>
 
-We customized the train–validation–test split to respect the temporal nature of the data. Since many of our engineered features rely on 30‑day rolling windows, it was essential to partition the dataset chronologically rather than randomly.
+We customized the train–validation–test split to respect the temporal nature of the data. Since many of our engineered features relied on 30‑day rolling windows, it was essential to partition the dataset chronologically rather than randomly.
 
-The full dataset spans 320 days. We designated the first 250 days for training, leaving a 70‑day holdout period. Of this holdout, the first 35 days were used for validation and the final 35 days for testing. This corresponds to a split of approximately 78.17% / 10.99% / 10.84% for training, validation, and test sets, respectively. The distribution of the positive class (class `1`) across these splits was 0.00101 / 0.00114 / 0.00116, which shows that the rare‑event class remained consistently represented across all partitions.
+The full dataset spanned 320 days. We designated the first 250 days for training, leaving a 70‑day holdout period. Of this holdout, the first 35 days were used for validation and the final 35 days for testing. This corresponded to a split of approximately 78.17% / 10.99% / 10.84% for training, validation, and test sets, respectively. The distribution of the positive class (class `1`) across these splits was 0.00101 / 0.00114 / 0.00116, which showed that the rare‑event class remained consistently represented across all partitions.
 
-This temporal splitting strategy serves two purposes:
-- Prevents data leakage: ensuring that information from the future does not inadvertently influence the training process.
-- Maintains class stratification: preserving the relative balance of rare and common classes across all subsets, which is critical for reliable model evaluation.
-
+This temporal splitting strategy served two purposes:
+- Preventing data leakage: ensuring that information from the future does not inadvertently influence the training process.
+- Maintaining class stratification: preserving the relative balance of rare and common classes across all subsets, which is critical for reliable model evaluation.
 
 ---
 
@@ -195,7 +194,7 @@ Using the correlation matrix (see Figure 7), we identified and removed eight fea
 <p float="center">
   <img src="/Figures/corr_mat.png" width="1000" />
 </p>
-<p align="center"><b>Figure 7. Half correlation matrix for the 23 features. Features with high correlations were excluded from model tuning.</b></p>
+<p align="center"><b>Figure 7.Half correlation matrix displaying relationships among 23 features. Features with high intercorrelation were excluded from the model tuning process.</b></p>
 
 We trained the model and used a held‑out validation set to tune hyperparameters. We performed a grid search over `max_depth`, `learning_rate`, and `subsample` to identify the best-performing configurations.
 
@@ -209,8 +208,8 @@ We trained the model and used a held‑out validation set to tune hyperparameter
 
 We trained an XGBoost model on the combined training and validation sets, selecting hyperparameters that yielded the highest F1 score during validation: `max_depth` = 10, `learning_rate` = 0.01, and `subsample` = 1. 
 
-The resulting model achieved a high precision of 0.887, indicating that the majority of flagged transactions were indeed suspicious, an encouraging outcome for reducing false positives and minimizing unnecessary compliance reviews. However, recall remained relatively low at 0.413, suggesting that the model failed to identify a significant portion of true suspicious cases. This trade-off reflects a common challenge in anti-money laundering systems, where precision is often favored to avoid overwhelming investigators, but at the cost of missing subtle or novel laundering behaviors.
-The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics are visualized in Figure 8, which presents the confusion matrix (left) and the precision–recall curve (right).
+The resulting model achieved a high precision of 0.887, indicating that the majority of flagged transactions were indeed suspicious, an encouraging outcome for reducing false positives and minimizing unnecessary compliance reviews. However, recall remained relatively low at 0.413, suggesting that the model failed to identify a significant portion of true suspicious cases. This trade-off reflected a common challenge in anti-money laundering systems, where precision was often favored to avoid overwhelming investigators, but at the cost of missing subtle or novel laundering behaviors.
+The average precision score was 0.5586, reflecting moderate performance across varying decision thresholds and highlighting the model's sensitivity to class imbalance. These metrics were visualized in Figure 8, which presented the confusion matrix (left) and the precision–recall curve (right).
 
 <p float="center">
   <img src="/Figures/XGBoost_confusion_mat.png" width="350" />
@@ -219,7 +218,7 @@ The average precision score was 0.5586, reflecting moderate performance across v
 <p align="center"><b>Figure 8. Confusion matrix (left) and Precision–Recall curve (right) for the XGBoost model, illustrating classification performance and trade-offs between precision and recall.
 </b></p>
 
-We assessed feature importance using SHAP values (see Figure 9). The SHAP summary identified the strongest signals and their directions. The top six features contributing most to classification were `back_and_forth_transfers`, `fanin_30d`, `sent_to_received_ratio_monthly`, `fanin_intensity_ratio`, `Amount`, `circular_transaction_count`, and `currency_mismatch`. Other features had smaller SHAP contributions and do not materially influence classification relative to these variables. These results highlighted behavioral patterns to prioritize during feature engineering and threshold selection and warrant further investigation to confirm they align with domain expertise and are not artifacts of sampling or labeling.
+We assessed feature importance using SHAP values (see Figure 9). The SHAP summary identified the strongest signals and their directions. The top six features contributing most to classification were `back_and_forth_transfers`, `fanin_30d`, `sent_to_received_ratio_monthly`, `fanin_intensity_ratio`, `Amount`, `circular_transaction_count`, and `currency_mismatch`. Other features had smaller SHAP contributions and do not materially influence classification relative to these variables. These results highlighted behavioral patterns to prioritize during feature engineering and threshold selection and warrant further investigation to confirm they align with domain expertise and were not artifacts of sampling or labeling.
 
 <p float="center">
   <img src="/Figures/xgboost_shap_summary.png" width="1000" />
@@ -247,37 +246,37 @@ Both `currency_mismatch` and `high_risk_sender` exhibited consistently positive 
 
 <h3 id="Transformer">Transformer</h3>
 
-The limitation with XGBoost is that it treated each feature independently, but laundering was defined by how accounts interact. That led us to use a Tabular Transformer. This model learned behavior patterns rather than isolated features. 
+The limitation with XGBoost was that it treated each feature independently, but laundering was defined by how accounts interact. That led us to use a Tabular Transformer. This model learned behavior patterns rather than isolated features. 
 
 **Transformer architecture:**
 
-The architecture uses a two stage attention design (see Figure 11):
-- <strong> Micro_Attention </strong>: focuses specifically on the relationship between the Sender and the Receiver account embeddings. This allow the model to learn behavioral signatures like repeated transfers, circular flows, or sudden pattern changes.
-- <strong> Macro_Attention </strong>: aggregates information across all transactions features, allowing the model to capture broader context such as currency behavior, geographical routing and temporal patterns.
+The architecture used a two stage attention design (see Figure 11):
+- <strong> Micro_Attention </strong>: focused specifically on the relationship between the Sender and the Receiver account embeddings. This allowed the model to learn behavioral signatures like repeated transfers, circular flows, or sudden pattern changes.
+- <strong> Macro_Attention </strong>: aggregated information across all transactions features, allowing the model to capture broader context such as currency behavior, geographical routing and temporal patterns.
 
 <p align="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
 <p align="center"><b>Figure 11. Overview of Transformer Model architecture.</b></p>
 
-Each attention block includes:
+Each attention block included:
 - Residual skip connections
 - Layer normalization
 - Dropout for regularization
 
-Categorical features are encoded through shared + individual embeddings, while continuous features are projected and normalized before being concatenated. The combined vector is passed to a final MLP classifier. 
+Categorical features were encoded through shared + individual embeddings, while continuous features were projected and normalized before being concatenated. The combined vector was passed to a final MLP classifier. 
 
-Because laundering cases are extremely rare, training uses:
+Because laundering cases were extremely rare, training uses:
 
 - <strong> Focal Loss </strong> to emphasize hard minority-class examples
 - <strong> WeightedRandomSampler </strong> to maintain balanced batches
 - <strong> AdamW optimizer </strong> to stabilize training and prevents overfitting
-- <strong> Scheduler: </strong> Tested both <strong> Warm-up +Cosine Decay </strong> and <strong> ReduceLROnPlateau </strong> for learning-rate scheduling.
+- <strong> Scheduler: </strong> Tested both <strong> Warm-up + Cosine Decay </strong> and <strong> ReduceLROnPlateau </strong> for learning-rate scheduling.
 The validation-driven adaptation of <strong> ReduceLROnPlateau </strong> provided more stable convergence, so it was chosen as the final scheduling strategy.
 
 Total training time for 20 epochs was ~2.5 hours. 
 
-Since Money laundering is a rare class, the default threshold of 0.5 is not optimal. To better prioritize recall, we selected the classification threshold by maximizing the F2-score on the validation set (where recall is weighted higher than precision):
+Since Money laundering was a rare class, the default threshold of 0.5 was not optimal. To better prioritize recall, we selected the classification threshold by maximizing the F2-score on the validation set (where recall was weighted higher than precision):
 
 Optimal threshold found on validation:
 Threshold = 0.3000 | Best F2 = 0.6452
@@ -309,15 +308,8 @@ Threshold = 0.3000 | Best F2 = 0.6452
   </tbody>
 </table>
 
-Note: The exact metric values shown (Precision = 0.6492, Recall = 0.5993, F1 = 0.6233) may differ slightly from those in the training notebook. This is expected. The model contains stochastic components (random weight initialization, shuffled mini-batches, and weighted sampling), so each training run can converge to slightly different local optima. The performance is stable in trend (high precision with moderate recall), even if the exact numbers vary by a few points.
+Note: The exact metric values shown (Precision = 0.6492, Recall = 0.5993, F1 = 0.6233) may differ slightly from those in the training notebook. This was expected. The model contained stochastic components (random weight initialization, shuffled mini-batches, and weighted sampling), so each training run could converge to slightly different local optima. The performance was stable in trend (high precision with moderate recall), even if the exact numbers varied by a few points.
 
-
-<!--
-- Dates and times are merged into a unified timestamp, and temporal features (day, month, year, hour, weekday, weekend) are derived. 
-- The amount feature is log-transformed to stabilize variance. 
-- High-cardinality categorical columns (Sender_account, Receiver_account) are hashed into 50,000 buckets for efficient embedding. 
-- Continuous features are standardized using StandardScaler. 
--->
 
 ---
 
@@ -336,14 +328,14 @@ Our model was a **recurrent spatio-temporal GNN**, designed to analyze a sequenc
 
 1.  **Temporal Update (RNN):** First, each node's "memory" was updated. A **GRU cell** took the node's hidden state from the previous snapshot ($h_{t-1}$) and combined it with its features from the *current* snapshot ($x_t$). This produced a "proposed" hidden state ($h'_{t}$) that captured the node's individual temporal patterns.
 
-2.  **Spatial Update (GNN):** Next, these "proposed" states were passed through a **3-layer GraphSAGE network**. This performed spatial message passing, where each node aggregated the states of its neighbors. Stacking three layers allowed the model to "see" up to 3 hops away, so the final node embedding ($h_t$) was spatially-aware and contains information from its local network neighborhood.
+2.  **Spatial Update (GNN):** Next, these "proposed" states were passed through a **3-layer GraphSAGE network**. This performed spatial message passing, where each node aggregated the states of its neighbors. Stacking three layers allowed the model to "see" up to 3 hops away, so the final node embedding ($h_t$) was spatially-aware and contained information from its local network neighborhood.
 
 3.  **Edge-Level Classification (MLP):** Finally, to make a prediction for a specific transaction (edge), the model **concatenated** three vectors:
     * The final embedding of the **sender node ($h_i$)**
     * The final embedding of the **receiver node ($h_j$)**
     * The features of the **transaction itself ($edge\_{attr}$)**
 
-    This combined vector was fed into a multi-layer perceptron (MLP) that outputs a single "fraud score" (logit), which was then used to compute the loss.
+    This combined vector was fed into a multi-layer perceptron (MLP) that outputed a single "fraud score" (logit), which was then used to compute the loss.
 
 ---
 
@@ -367,7 +359,7 @@ We compared model performance using PR-AUC and Recall (see Figure 14). The Trans
 
 <h4 id="Future">Real-World Impact and Future Work</h4>
 
-While the Transformer and TGNN models ran slightly slower than XGBoost, their performance gains were substantial. Improved recall can help stakeholders reduce regulatory penalties, protect institutional reputation, and strengthen the integrity of financial operations. Meanwhile, improved precision reduces false alarms, lowering operational costs and minimizing customer disruption.
+While the Transformer and TGNN models ran slightly slower than XGBoost, their performance gains were substantial. Improved recall could help stakeholders reduce regulatory penalties, protect institutional reputation, and strengthen the integrity of financial operations. Meanwhile, improved precision reduces false alarms, lowering operational costs and minimizing customer disruption.
 
 In conclusion, the Transformer achieved better recall than the XGBoost baseline, though at the cost of lower precision. The TGNN model, however, delivered the strongest gains in both recall and precision, making it a robust and effective choice for modern AML systems. These findings lay a solid foundation for scalable, graph-based approaches in real-world AML environments. Future work will explore hybrid architectures, temporal graph modeling, and real-time inference to further enhance detection capabilities and operational deployment.
 
