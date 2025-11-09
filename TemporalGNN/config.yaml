@@ -14,7 +14,7 @@ training:
   sequence_length: 4  # Number of time steps before breaking gradient flow
   epochs: 150
   learning_rate: 0.001
-  weight_decay: 0.00001
+  weight_decay: 0.0001
   patience: 10        # Early stopping patience
   beta: 2             # For F2 optimization
 
