@@ -69,7 +69,9 @@ class TemporalGraphDataProcessor:
             window_end = window_start + pd.Timedelta(self.time_window)
             window_txns = df[(df['datetime'] >= pd.Timestamp(window_start)) & (df['datetime'] < pd.Timestamp(window_end))]
             active_accounts = list(set(window_txns['Sender_account'].unique()).union(set(window_txns['Receiver_account'].unique())))
-            
+
+            logger.info(f"Processing window {window_start.date()} to {(window_end - pd.Timedelta('1D')).date()}")
+
             # Sent and received transaction stats
             sent_txns = window_txns.groupby(['Sender_account']).agg({
                         'Receiver_account': ['size', 'nunique'],
@@ -219,7 +221,7 @@ class TemporalGraphDataProcessor:
             window_end_print = (window_end - pd.Timedelta('1D')).strftime('%Y-%m-%d') # One day less for printing
             window_start_str = window_start.strftime('%Y-%m-%d')
             window_end_str = window_end.strftime('%Y-%m-%d')
-            logging.info(f"Processing window: {window_start_str} to {window_end_print}")
+            logging.info(f"Snapshot window: {window_start_str} to {window_end_print}")
             
             # Get transactions in current window
             window_mask = (df['datetime'] >= window_start_str) & (df['datetime'] < window_end_str)
