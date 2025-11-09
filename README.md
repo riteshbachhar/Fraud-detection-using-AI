@@ -67,7 +67,7 @@ In this project, our objective is to develop deep learning models using the SAML
 
 The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-monitoring-dataset-aml/data">SAML-D dataset</a> is a synthetic dataset of 9.5 million transactions, developed using insights from AML specialists through semi-structured interviews, analysis of existing datasets, and a comprehensive literature review. The dataset includes 28 typologies, 11 normal and 17 suspicious, modelled to reflect real-world senarios, with overlapping behaviours between normal and suspicious transactions to increase complexity and challenge detection efforts. The dataset includes 676,912 unique accounts conducting transactions across 18 geographic locations, using 13 currencies and 7 payment methods. Among these, 0.104% of the transactions (9,873 entires) are labeled as suspicious representing various money laundering techniques such as layering, rapid fund movement, and transactions to high risk locations (see Figure 2).
 
-<p float="center">
+<p align="center">
   <img src="/Figures/imbalanced_class.png" width="450" />
 <p align="center"><b>Figure 2. The data is highly imbalanced, with only 0.1% of transactions labeled as suspicious.
 </b></p>
@@ -455,6 +455,7 @@ df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weeke
 
 <h3 id="Code-Description">Code Description</h3>
 
+- [EDA.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/EDA.ipynb): Exploratory Data Analysis of SAML-D Dataset.
 - [config.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/config.py): include various paths such as `DATAPATH`, `SAMPLE_DATAPATH`, and others. Use the configuration file in your notebook
 - [notebooks/colab_setup.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/colab_setup.ipynb): instructions for setting up Google Colab
 - [notebooks/dataset_download.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/dataset_download.ipynb): generates a sample dataset (first N rows) from the full dataset for quick experimentation
