@@ -124,6 +124,14 @@ Most of the top 20 money‑transfer routes are domestic (UK → UK), but the top
 
 From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
 
+We created the following binary categorical features, where each feature takes the value 1 when the condition is true and 0 otherwise:
+- `currency_mismatch`: 1 if `Payment_currency` differed from `Received_currency`, 0 otherwise.
+- `cross_border`: 1 if `Payment_type` equaled `Cross-border`, 0 otherwise.
+- `high_risk_sender`: 1 if `Sender_bank_location` was in the high‑risk country list, 0 otherwise.
+- `high_risk_receiver`: 1 if `Receiver_bank_location` was in the high‑risk country list, 0 otherwise.
+- `is_weekend`: 1 if the `Date` fell on a Saturday or Sunday, 0 otherwise.
+The high‑risk country list used for this work was: `Mexico`, `Turkey`, `Morocco`, and `UAE`.
+
 In addition, we engineered several domain‑specific features (see Figure 6) designed to capture structural and behavioral signals of anomalous activity:
 
 - `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
@@ -132,7 +140,11 @@ In addition, we engineered several domain‑specific features (see Figure 6) des
 - `amount_dispersion_std`: The standard deviation of transaction amounts per sender, capturing volatility in counterparties' transfer sizes.
 - `sent_to_received_ratio_monthly`: The ratio of total received to total sent amounts within a month. Ratios trending toward 1 may indicate circular or balancing behavior that warrants scrutiny
 - `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
-- `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
+- `daily_receiver_transaction`: The number of transactions the `Receiver_account` received in a single day.
+- `weekly_receiver_transaction`: The number of transactions the `Receiver_account` received in a single week.
+- `daily_sender_transaction`: The number of transactions the `Sender_account` sent in a single day.
+- `weekly_sender_transaction`: The number of transactions the `Sender_account` sent in a single week.
+- `circular_transaction_count`: The number of transactions that ultimately return to the original sender, forming a cycle. Such cycles may span multiple steps and several days, making this feature a strong indicator of layering or obfuscation.
 
 <p float="center">
   <img src="/Figures/fanin.JPG" width="250" />
@@ -367,7 +379,8 @@ Besides the original 11 features and the target variable `Is_laundering`, the pr
 - Continuous features: `fanin_30d`, `fan_in_out_ratio`, `fanin_intensity_ratio`, `amount_dispersion_std`, `sent_to_received_ratio_monthly`, `back_and_forth_transfers`, `daily_receiver_transaction`, `weekly_receiver_transaction`, `daily_sender_transaction`, `weekly_sender_transaction`, `circular_transaction_count`
   
 Additional notes:
-- The `Amount` feature was converted to log scale prior to export.
+- `Amount` was converted to log scale prior to export.
+- `Laundering_type` was excluded from all modeling and feature‑engineering steps.
 - These features were used to train both an XGBoost model and a Transformer model.
 - The Transformer model also used an additional feature, `is_weekend`, which was not included in the exported DataFrames. To reproduce the Transformer experiments, add an is_weekend column as shown below.
 
