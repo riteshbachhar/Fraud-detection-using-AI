@@ -72,7 +72,7 @@ The <a href="https://www.kaggle.com/datasets/berkanoztas/synthetic-transaction-m
 <p align="center"><b>Figure 2. The data is highly imbalanced, with only 0.1% of transactions labeled as suspicious.
 </b></p>
 
-The dataset includes the following 12 features:
+The dataset includes the following 11 features and 1 target variable:
 
 - `Time`: Time of transaction, formatted as HH:MM:ss
 - `Date`: Date of transaction, formatted as YYYY:MM:DD; ranges from October 6, 2022 to August 22, 2023
@@ -124,6 +124,14 @@ Most of the top 20 money‑transfer routes are domestic (UK → UK), but the top
 
 From the 12 original features, we derived 8 additional temporal variables from the existing `Time` and `Date` attributes. These include: `year`, `month`, `day_of_month`, `day_of_year`, `day_of_week`, `hour`, `minute`, and `second`. Together, these features allow the model to capture seasonality, periodicity, and fine‑grained temporal patterns in transaction behavior.
 
+We created the following binary categorical features, where each feature takes the value 1 when the condition is true and 0 otherwise:
+- `currency_mismatch`: 1 if `Payment_currency` differed from `Received_currency`, 0 otherwise.
+- `cross_border`: 1 if `Payment_type` equaled `Cross-border`, 0 otherwise.
+- `high_risk_sender`: 1 if `Sender_bank_location` was in the high‑risk country list, 0 otherwise.
+- `high_risk_receiver`: 1 if `Receiver_bank_location` was in the high‑risk country list, 0 otherwise.
+- `is_weekend`: 1 if the `Date` fell on a Saturday or Sunday, 0 otherwise.
+The high‑risk country list used for this work was: `Mexico`, `Turkey`, `Morocco`, and `UAE`.
+
 In addition, we engineered several domain‑specific features (see Figure 6) designed to capture structural and behavioral signals of anomalous activity:
 
 - `fanin_30d`: The count of unique incoming counterparties over a rolling 30‑day window. This proved to be the single most predictive feature, reflecting the diversity of inbound connections.
@@ -132,7 +140,11 @@ In addition, we engineered several domain‑specific features (see Figure 6) des
 - `amount_dispersion_std`: The standard deviation of transaction amounts per sender, capturing volatility in counterparties' transfer sizes.
 - `sent_to_received_ratio_monthly`: The ratio of total received to total sent amounts within a month. Ratios trending toward 1 may indicate circular or balancing behavior that warrants scrutiny
 - `back_and_forth_transfers`: The number of transfers exchanged between a sender and receiver within a single calendar day. This is a directed metric: A → B is treated as distinct from B → A.
-- `circular_transaction_count`: The number of transactions that eventually return to the original sender, forming a cycle. Cycles may span multiple steps and extend across several days, making them a strong indicator of layering or obfuscation.
+- `daily_receiver_transaction`: The number of transactions the `Receiver_account` received in a single day.
+- `weekly_receiver_transaction`: The number of transactions the `Receiver_account` received in a single week.
+- `daily_sender_transaction`: The number of transactions the `Sender_account` sent in a single day.
+- `weekly_sender_transaction`: The number of transactions the `Sender_account` sent in a single week.
+- `circular_transaction_count`: The number of transactions that ultimately return to the original sender, forming a cycle. Such cycles may span multiple steps and several days, making this feature a strong indicator of layering or obfuscation.
 
 <p float="center">
   <img src="/Figures/fanin.JPG" width="250" />
@@ -238,7 +250,7 @@ The limitation with XGBoost is that it treated each feature independently, but l
 
 **Transformer architecture**
 
-The architecture uses a two stage attention design:
+The architecture uses a two stage attention design (see Figure 11):
 - <strong> Micro_Attention </strong>: focuses specifically on the relationship between the Sender and the Receiver account embeddings. This allow the model to learn behavioral signatures like repeated transfers, circular flows, or sudden pattern changes.
 - <strong> Macro_Attention </strong>: aggregates information across all transactions features, allowing the model to capture broader context such as currency behavior, geographical routing and temporal patterns.
 
@@ -254,10 +266,46 @@ Because laundering cases are extremely rare, training uses:
 - <strong> Focal Loss </strong> to emphasize hard minority-class examples
 - <strong> WeightedRandomSampler </strong> to maintain balanced batches
 - <strong> AdamW optimizer </strong> to stabilize training and prevents overfitting
-- <strong> Scheduler </strong> Tested both <strong Warm-up +Cosine Decay </strong> and <strong> ReduceLROnPlateau </strong> for learning-rate scheduling.
-The validation-driven adaptation of <strong> ReduceLROnPlateau </strong> provided more stable convergence, so it was chosen as the final scheduling strategy. 
+- <strong> Scheduler </strong> Tested both <strong> Warm-up +Cosine Decay </strong> and <strong> ReduceLROnPlateau </strong> for learning-rate scheduling.
+The validation-driven adaptation of <strong> ReduceLROnPlateau </strong> provided more stable convergence, so it was chosen as the final scheduling strategy.
 
-<p float="center">
+Total training time for 20 epochs was ~2.5 hours. 
+
+Since Money laundering is a rare class, the default threshold of 0.5 is not optimal. To better prioritize recall, we selected the classification threshold by maximizing the F2-score on the validation set (where recall is weighted higher than precision):
+
+Optimal threshold found on validation:
+Threshold = 0.3000 | Best F2 = 0.6452
+
+
+<table style="border-collapse:collapse; width:420px; font-family:Arial, sans-serif;">
+  <caption style="caption-side:top; font-weight:bold; margin-bottom:6px;">
+    Using tuned threshold on the test set (Class 1 = laundering)
+  </caption>
+  <thead>
+    <tr>
+      <th style="border:1px solid #ccc; padding:8px; text-align:left;">Metric</th>
+      <th style="border:1px solid #ccc; padding:8px; text-align:right;">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border:1px solid #ccc; padding:8px;">Precision</td>
+      <td style="border:1px solid #ccc; padding:8px; text-align:right;">0.6492</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ccc; padding:8px;">Recall</td>
+      <td style="border:1px solid #ccc; padding:8px; text-align:right;">0.5993</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ccc; padding:8px;">F1&nbsp;Score</td>
+      <td style="border:1px solid #ccc; padding:8px; text-align:right;">0.6233</td>
+    </tr>
+  </tbody>
+</table>
+
+Note: The exact metric values shown (Precision = 0.6492, Recall = 0.5993, F1 = 0.6233) may differ slightly from those in the training notebook. This is expected. The model contains stochastic components (random weight initialization, shuffled mini-batches, and weighted sampling), so each training run can converge to slightly different local optima. The performance is stable in trend (high precision with moderate recall), even if the exact numbers vary by a few points.
+
+<p align="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
 <p align="center"><b>Figure 11. Overview of Transformer Model architecture.</b></p>
@@ -374,6 +422,21 @@ df_test = pl.read_parquet(os.path.join(drive_path, "df_test.parquet"))
 
 ```
 
+Besides the original 11 features and the target variable `Is_laundering`, the provided DataFrames include the following additional features.
+- Categorical features (binary: 0 or 1): `currency_mismatch`, `cross_border`, `high_risk_sender`, `high_risk_receiver`
+- Continuous features: `fanin_30d`, `fan_in_out_ratio`, `fanin_intensity_ratio`, `amount_dispersion_std`, `sent_to_received_ratio_monthly`, `back_and_forth_transfers`, `daily_receiver_transaction`, `weekly_receiver_transaction`, `daily_sender_transaction`, `weekly_sender_transaction`, `circular_transaction_count`
+  
+Additional notes:
+- `Amount` was converted to log scale prior to export.
+- `Laundering_type` was excluded from all modeling and feature‑engineering steps.
+- These features were used to train both an XGBoost model and a Transformer model.
+- The Transformer model also used an additional feature, `is_weekend`, which was not included in the exported DataFrames. To reproduce the Transformer experiments, add an is_weekend column as shown below.
+
+```
+df_train.with_columns([df_train["Date"].dt.weekday().is_in([5, 6]).alias("is_weekend")])
+df_val.with_columns([df_val["Date"].dt.weekday().is_in([5, 6]).alias("is_weekend")])
+df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weekend")])
+```
 
 ---
 
