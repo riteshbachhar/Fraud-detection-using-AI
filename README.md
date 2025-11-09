@@ -271,6 +271,40 @@ The validation-driven adaptation of <strong> ReduceLROnPlateau </strong> provide
 
 Total training time for 20 epochs was ~2.5 hours. 
 
+Since Money laundering is a rare class, the default threshold of 0.5 is not optimal. To better prioritize recall, we selected the classification threshold by maximizing the F2-score on the validation set (where recall is weighted higher than precision):
+
+Optimal threshold found on validation:
+Threshold = 0.3000 | Best F2 = 0.6452
+
+Using this tuned threshold on the test set:
+
+<table style="border-collapse:collapse; width:420px; font-family:Arial, sans-serif;">
+  <caption style="caption-side:top; font-weight:bold; margin-bottom:6px;">
+    Using tuned threshold on the test set (Class 1 = laundering)
+  </caption>
+  <thead>
+    <tr>
+      <th style="border:1px solid #ccc; padding:8px; text-align:left;">Metric</th>
+      <th style="border:1px solid #ccc; padding:8px; text-align:right;">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border:1px solid #ccc; padding:8px;">Precision</td>
+      <td style="border:1px solid #ccc; padding:8px; text-align:right;">0.6492</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ccc; padding:8px;">Recall</td>
+      <td style="border:1px solid #ccc; padding:8px; text-align:right;">0.5993</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ccc; padding:8px;">F1&nbsp;Score</td>
+      <td style="border:1px solid #ccc; padding:8px; text-align:right;">0.6233</td>
+    </tr>
+  </tbody>
+</table>
+
+
 <p align="center">
   <img src="/Figures/transformer_diagram.jpg" width="500" />
 </p>
