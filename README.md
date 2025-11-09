@@ -259,6 +259,15 @@ Early stopping was based on PR-AUC, which was more informative for rare event de
 
 Traditional rule-based methods have proven inadequate for detecting the sophisticated money laundering patterns prevalent in today's financial system. Recent work has demonstrated that Graph Neural Networks can effectively learn from graph-structured data, achieving substantial improvements in financial fraud detection. Building on these advances, our objective is to develop a Graph Neural Network model that detects money laundering activities with greater than 85% recall while maintaining operational precision, leveraging the explicit network structures embedded in the SAML-D dataset.
 
+**Temporal Graph Neural Network Architecture**
+
+Money laundering was fundamentally a network-based problem, not an individual one. Thus, we implemented a temporal neural network to flag suspicious transactions (see Figure 12). We first converted transactions into graphs using a 7-day window, where each node represented an account, and edges represented the transactions. To prevent data leakage, we only calculated the account-level statistics over that specific time window. Forward pass through the network went as follows: The model performed a temporal update for each node via GRU cell. This updated node's current state $h_{t-1}$ with current node features ($X_t$), learning node-level temporal dynamics. Next, the proposed hidden state was passed through 3-layer `GraphSAGE` network. This step updated the node features by a method called message passing. This allowed the nodes to learn about their neighborhood and create a final embedding $h_{t}$. Finally, in the classification step, the model predicted each transaction. The hidden state of the sender node and the hidden state of the receiver node were concatenated with the transaction feature and passed through an MLP. This calculated a single logit, which was compared with the true label to compute a loss function.
+
+<p float="center">
+  <img src="/Figures/TGNN_diagram.JPG" width="1000" />
+</p>
+<p align="center"><b>Figure 12. Architecture of the Temporal Graph Neural Network (TGNN).</b></p>
+
 <!--
 **Advantages of GNN:**
 
@@ -280,14 +289,6 @@ We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, whic
   - Dropout
   - Linear Layer
 
-**Temporal Graph Neural Network Architecture**
-
-Money laundering was fundamentally a network-based problem, not an individual one. Thus, we implemented a temporal neural network to flag suspicious transactions (see Figure 12). We first converted transactions into graphs using a 7-day window, where each node represented an account, and edges represented the transactions. To prevent data leakage, we only calculated the account-level statistics over that specific time window. Forward pass through the network went as follows: The model performed a temporal update for each node via GRU cell. This updated node's current state $h_{t-1}$ with current node features ($X_t$), learning node-level temporal dynamics. Next, the proposed hidden state was passed through 3-layer `GraphSAGE` network. This step updated the node features by a method called message passing. This allowed the nodes to learn about their neighborhood and create a final embedding $h_{t}$. Finally, in the classification step, the model predicted each transaction. The hidden state of the sender node and the hidden state of the receiver node were concatenated with the transaction feature and passed through an MLP. This calculated a single logit, which was compared with the true label to compute a loss function.
-
-<p float="center">
-  <img src="/Figures/TGNN_diagram.JPG" width="1000" />
-</p>
-<p align="center"><b>Figure 12. Architecture of the Temporal Graph Neural Network (TGNN).</b></p>
 
 <!--
 - We aggregate the dataset into seven-day intervals to capture temporal network dynamics and structural patterns, reducing computational overhead during graph-based processing. For each interval, we compute account-level statistics, including transaction frequency, fan-in/fan-out degrees, and median transaction amounts. Transaction amounts are log-transformed to mitigate skewness and enhance the applicability of deep learning models for detecting complex laundering typologies.
