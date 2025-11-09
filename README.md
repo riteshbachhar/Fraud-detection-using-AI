@@ -130,6 +130,7 @@ We created the following binary categorical features, where each feature takes t
 - `high_risk_sender`: 1 if `Sender_bank_location` was in the high‑risk country list, 0 otherwise.
 - `high_risk_receiver`: 1 if `Receiver_bank_location` was in the high‑risk country list, 0 otherwise.
 - `is_weekend`: 1 if the `Date` fell on a Saturday or Sunday, 0 otherwise.
+  
 The high‑risk country list used for this work was: `Mexico`, `Turkey`, `Morocco`, and `UAE`.
 
 In addition, we engineered several domain‑specific features (see Figure 6) designed to capture structural and behavioral signals of anomalous activity:
@@ -384,7 +385,7 @@ We evaluated model performance using Precision-Recall curves (see Figure 13). Wh
 </p>
 <p align="center"><b>Figure 13. Precision-Recall curve between models.</b></p>
 
-We compared model performance using PR-AUC and Recall (see Figure 14). The Transformer model improved PR-AUC by 13.2%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
+We compared model performance using PR-AUC and Recall (see Figure 14). The Transformer model improved PR-AUC by 14.6%, while TGNN achieved a 45.1% gain over XGBoost. Improvements in Recall were even more pronounced: the Transformer increased Recall by 51.1%, and TGNN by 96.9%. These results highlighted the superior ability of graph-based models to capture complex transaction patterns, reinforcing their value in anti-money laundering detection.
 
 <p float="center">
   <img src="/Figures/Model Performance comparison.png" />
@@ -430,7 +431,7 @@ Additional notes:
 - `Amount` was converted to log scale prior to export.
 - `Laundering_type` was excluded from all modeling and feature‑engineering steps.
 - These features were used to train both an XGBoost model and a Transformer model.
-- The Transformer model also used an additional feature, `is_weekend`, which was not included in the exported DataFrames. To reproduce the Transformer experiments, add an is_weekend column as shown below.
+- The Transformer model also used an additional feature, `is_weekend`, which was not included in the exported DataFrames. To reproduce the Transformer experiments, add an `is_weekend` column as shown below.
 
 ```
 df_train.with_columns([df_train["Date"].dt.weekday().is_in([5, 6]).alias("is_weekend")])
@@ -455,7 +456,22 @@ df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weeke
 
 <h3 id="Code-Description">Code Description</h3>
 
-- [EDA.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/EDA.ipynb): Exploratory Data Analysis of SAML-D Dataset.
+<li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/EDA.ipynb'>EDA.ipynb</a>: Exploratory Data Analysis of SAML-D Dataset.</li>
+<li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost">XGBoost</a>: Contains the baseline model (XGBoost) notebook along with all relevant notebooks and Python pipeline components.</li>
+        <ul>
+            <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost/preprocess">Preprocess</a>: Implements additional feature generation and a custom time-based data split using Polars for efficient computation</li>
+            <ul>
+                <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/preprocess/circular_transaction_count_polars.py'>circular_transaction_count_polars.py</a>: Computes "circular_transaction_count".</li>
+                <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/preprocess/custom_split_polars.py'>custom_split_polars.py</a>: Performs a temporal split of the original dataset into training, validation, and test subsets.</li>
+                <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/preprocess/features_polars.py'>features_polars.py</a>: Computes all features except "circular_transaction_count".
+</li>
+                <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/preprocess/recast_polars.py'>recast_polars.py</a>: Recasts integer-based columns to improve storage efficiency.
+</li>
+            </ul>
+             <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost/results">results</a>: Contains notebooks with executed cells and saved results.</li>
+            <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/baseline_hypertuning.py'>baseline_hypertuning.py</a>: Implements hyperparameter optimization for the XGBoost baseline model using the SAML-D dataset.</li>
+            <li>https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/baseline_xgboost.py<a>baseline_xgboost.py</a>:  Trains the final model using optimal parameters obtained from the hyperparameter tuning process.</li>
+        </ul>
 - [config.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/config.py): include various paths such as `DATAPATH`, `SAMPLE_DATAPATH`, and others. Use the configuration file in your notebook
 - [notebooks/colab_setup.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/colab_setup.ipynb): instructions for setting up Google Colab
 - [notebooks/dataset_download.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/dataset_download.ipynb): generates a sample dataset (first N rows) from the full dataset for quick experimentation
