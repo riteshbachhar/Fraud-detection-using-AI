@@ -248,7 +248,7 @@ Both `currency_mismatch` and `high_risk_sender` exhibited consistently positive 
 
 The limitation with XGBoost is that it treated each feature independently, but laundering was defined by how accounts interact. That led us to use a Tabular Transformer. This model learned behavior patterns rather than isolated features. 
 
-**Transformer architecture**
+**Transformer architecture:**
 
 The architecture uses a two stage attention design (see Figure 11):
 - <strong> Micro_Attention </strong>: focuses specifically on the relationship between the Sender and the Receiver account embeddings. This allow the model to learn behavioral signatures like repeated transfers, circular flows, or sudden pattern changes.
