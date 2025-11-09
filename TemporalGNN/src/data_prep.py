@@ -14,7 +14,7 @@ import torch
 from torch_geometric.data import Data
 import yaml
 import sys
-sys.path.append(str(Path(__file__).parent.parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent / 'utils'))
 from config import DATAPATH
 try:
     from utils import load_config  # Works for scripts in src/
