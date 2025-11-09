@@ -353,8 +353,8 @@ Our model trained successfully, with validation and training losses decreasing s
 Our Temporal GNN achieved an **Area Under the PR-Curve (AUPRC) of 0.85**, significantly outperforming our baseline XGBoost model. This demonstrates its superior ability to handle the complex, imbalanced nature of this data.
 
 <p float="center">
-  <img src="/Figures/training_validation_loss_tgnn.png" width="450" />
-  <img src="/Figures/confusion_matrix_tgnn.png" width="450" />
+  <img src="/Figures/training_validation_loss_tgnn.png" width="350" />
+  <img src="/Figures/confusion_matrix_tgnn.png" width="350" />
 </p>
 <p align="center"><b>Figure 13. Traning and validation loss curves (left) and confusion matrix on test set (right) for the Temporal Graph Neural Network (TGNN).
 </b></p>
