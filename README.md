@@ -255,6 +255,11 @@ The architecture uses a two stage attention design (see Figure 11):
 - <strong> Micro_Attention </strong>: focuses specifically on the relationship between the Sender and the Receiver account embeddings. This allow the model to learn behavioral signatures like repeated transfers, circular flows, or sudden pattern changes.
 - <strong> Macro_Attention </strong>: aggregates information across all transactions features, allowing the model to capture broader context such as currency behavior, geographical routing and temporal patterns.
 
+<p align="center">
+  <img src="/Figures/transformer_diagram.jpg" width="500" />
+</p>
+<p align="center"><b>Figure 11. Overview of Transformer Model architecture.</b></p>
+
 Each attention block includes:
 - Residual skip connections
 - Layer normalization
@@ -306,10 +311,6 @@ Threshold = 0.3000 | Best F2 = 0.6452
 
 Note: The exact metric values shown (Precision = 0.6492, Recall = 0.5993, F1 = 0.6233) may differ slightly from those in the training notebook. This is expected. The model contains stochastic components (random weight initialization, shuffled mini-batches, and weighted sampling), so each training run can converge to slightly different local optima. The performance is stable in trend (high precision with moderate recall), even if the exact numbers vary by a few points.
 
-<p align="center">
-  <img src="/Figures/transformer_diagram.jpg" width="500" />
-</p>
-<p align="center"><b>Figure 11. Overview of Transformer Model architecture.</b></p>
 
 <!--
 - Dates and times are merged into a unified timestamp, and temporal features (day, month, year, hour, weekday, weekend) are derived. 
