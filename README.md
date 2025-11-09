@@ -266,7 +266,7 @@ Because laundering cases are extremely rare, training uses:
 - <strong> Focal Loss </strong> to emphasize hard minority-class examples
 - <strong> WeightedRandomSampler </strong> to maintain balanced batches
 - <strong> AdamW optimizer </strong> to stabilize training and prevents overfitting
-- <strong> Scheduler </strong> Tested both <strong> Warm-up +Cosine Decay </strong> and <strong> ReduceLROnPlateau </strong> for learning-rate scheduling.
+- <strong> Scheduler: </strong> Tested both <strong> Warm-up +Cosine Decay </strong> and <strong> ReduceLROnPlateau </strong> for learning-rate scheduling.
 The validation-driven adaptation of <strong> ReduceLROnPlateau </strong> provided more stable convergence, so it was chosen as the final scheduling strategy.
 
 Total training time for 20 epochs was ~2.5 hours. 
