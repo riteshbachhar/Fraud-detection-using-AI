@@ -327,51 +327,23 @@ Money laundering is a dynamic, network-based problem. A single transaction might
 
 **Temporal Graph Neural Network Architecture**
 
-Our model is a **recurrent spatio-temporal GNN**, designed to analyze a sequence of graph snapshots. The forward pass for each snapshot consists of three main stages:
-
-1.  **Temporal Update (RNN):** First, each node's "memory" is updated. A **GRU cell** takes the node's hidden state from the previous snapshot ($h_{t-1}$) and combines it with its features from the *current* snapshot ($x_t$). This produces a "proposed" hidden state ($h'_{t}$) that captures the node's individual temporal patterns.
-
-2.  **Spatial Update (GNN):** Next, these "proposed" states are passed through a **3-layer GraphSAGE network**. This performs spatial message passing, where each node aggregates the states of its neighbors. Stacking three layers allows the model to "see" up to 3 hops away, so the final node embedding ($h_t$) is spatially-aware and contains information from its local network neighborhood.
-
-3.  **Edge-Level Classification (MLP):** Finally, to make a prediction for a specific transaction (edge), the model **concatenates** three vectors:
-    * The final embedding of the **sender node ($h_i$)**
-    * The final embedding of the **receiver node ($h_j$)**
-    * The features of the **transaction itself ($edge\_{attr}$)**
-
-    This combined vector is fed into a multi-layer perceptron (MLP) that outputs a single "fraud score" (logit), which is then used to compute the loss.
-
+Our model was a **recurrent spatio-temporal GNN**, designed to analyze a sequence of graph snapshots (see Figure 12). The forward pass for each snapshot consisted of three main stages:
 
 <p float="center">
   <img src="/Figures/TGNN_diagram.JPG" width="1000" />
 </p>
 <p align="center"><b>Figure 12. Architecture of the Temporal Graph Neural Network (TGNN).</b></p>
 
-<!--
-**Advantages of GNN:**
+1.  **Temporal Update (RNN):** First, each node's "memory" was updated. A **GRU cell** took the node's hidden state from the previous snapshot ($h_{t-1}$) and combined it with its features from the *current* snapshot ($x_t$). This produced a "proposed" hidden state ($h'_{t}$) that captured the node's individual temporal patterns.
 
-- **Relational reasoning:** Captures dependencies between account
-- **Structural pattern recognition:** Explicitly models network typologies
-- **Information propagation:** Aggregates multi-hop neighborhood features
+2.  **Spatial Update (GNN):** Next, these "proposed" states were passed through a **3-layer GraphSAGE network**. This performed spatial message passing, where each node aggregated the states of its neighbors. Stacking three layers allowed the model to "see" up to 3 hops away, so the final node embedding ($h_t$) was spatially-aware and contains information from its local network neighborhood.
 
-**Graph Construction & GNN Models:**
-We propose to construct a transaction graph where each account represents a node and each transaction forms a directed edge between accounts. Node features capture aggregate account characteristics, including transaction statistics, network metrics, behavioral patterns, and temporal statistics. Edge features encode transaction-specific attributes such as amount, inter-arrival time, geographic properties, and payment type.
+3.  **Edge-Level Classification (MLP):** Finally, to make a prediction for a specific transaction (edge), the model **concatenated** three vectors:
+    * The final embedding of the **sender node ($h_i$)**
+    * The final embedding of the **receiver node ($h_j$)**
+    * The features of the **transaction itself ($edge\_{attr}$)**
 
-We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, which enables scalable neighborhood sampling and aggregation for efficient learning on large graphs, and **(2) Graph Attention Networks~(GAT)**, which learn adaptive attention weights over neighbors to identify the most relevant connections for risk assessment and provide interpretability for regulatory compliance.
-
-
-- GRUCell: The GRUCell layer updates node hidden states by integrating current node features with previous temporal information, capturing sequential dependencies in transaction data.
-- GraphSAGE: We use 3-layer GraphSAGE to perform neighborhood aggregation, allowing nodes to learn from their local graph structure and neighboring nodes' features.
-- MLP for Classification: The MLP consists of:
-  - Linear Layer
-  - ReLU Activation
-  - Dropout
-  - Linear Layer
-
-
-<!--
-- We aggregate the dataset into seven-day intervals to capture temporal network dynamics and structural patterns, reducing computational overhead during graph-based processing. For each interval, we compute account-level statistics, including transaction frequency, fan-in/fan-out degrees, and median transaction amounts. Transaction amounts are log-transformed to mitigate skewness and enhance the applicability of deep learning models for detecting complex laundering typologies.
-- Edges are constructed based on sender-receiver pairs, incorporating edge attributes like log-transformed amounts, currency mismatch indicators, cross-border flags, and day of week to enrich the relational context.
--->
+    This combined vector was fed into a multi-layer perceptron (MLP) that outputs a single "fraud score" (logit), which was then used to compute the loss.
 
 ---
 
@@ -379,7 +351,7 @@ We propose to investigate two primary GNN architectures: **(1) GraphSAGE**, whic
 
 <h4 id="Comparison">Model Comparison</h4>
 
-We evaluated model performance using Precision-Recall curves (see Figure 13). While the XGBoost model demonstrated high precision, it suffered from low recall. Both the Transformer and TGNN outperformed XGBoost by achieving higher recall, with TGNN surpassing the Transformer. This likely reflects the graph-structured nature of money laundering behavior, where relational dependencies and transaction topology are critical—highlighting the suitability of graph neural networks for this task.
+We evaluated model performance using Precision-Recall curves (see Figure 13). While the XGBoost model demonstrated high precision, it suffered from low recall. Both the Transformer and TGNN outperformed XGBoost by achieving higher recall, with TGNN surpassing the Transformer. This likely reflected the graph-structured nature of money laundering behavior, where relational dependencies and transaction topology are critical—highlighting the suitability of graph neural networks for this task.
 
 <p float="center">
   <img src="/Figures/pr_curve_comparison.png" />
@@ -462,14 +434,20 @@ df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weeke
         <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/TemporalGNN/results'>results</a>: Contains figures, JSON files, and NumPy arrays generated by the Temporal Graph Neural Network (TGNN).</li>
         <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/TemporalGNN/src'>src</a>: Contains source Python modules for utilities, data processing, model implementation, training and evaluation workflows.</li>
     </ul>
-<li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/EDA.ipynb'>EDA.ipynb</a>: Exploratory Data Analysis of SAML-D Dataset.</li>
+<li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/Transformer'>Transformer</a>: Includes Python workflows and executed notebooks showcasing results from Transformer-based models with two different schedulers.</li>
+    <ul>
+        <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/Transformer/Transformer(Scheduler%20%3D%20ReduceLROnPlateau)'>Transformer(Scheduler = ReduceLROnPlateau)</a>: Implements a learning rate scheduler that reduces the rate when a metric has stopped improving.</li>
+        <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/Transformer/Transformer(Scheduler%20%3D%20Warm-up%20%2B%20Cosine%20Decay)'>Transformer(Scheduler = Warm-up + Cosine Decay)</a>: Implements a learning rate scheduler with warm-up followed by cosine decay.</li>
+    </ul>
 <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost">XGBoost</a>: Contains the baseline model (XGBoost) notebook along with all relevant notebooks and Python pipeline components.</li>
-        <ul>
-            <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost/preprocess">Preprocess</a>: Implements additional feature generation and a custom time-based data split using Polars for efficient computation</li>
-             <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost/results">results</a>: Contains notebooks with executed cells and saved results.</li>
-            <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/baseline_hypertuning.py'>baseline_hypertuning.py</a>: Implements hyperparameter optimization for the XGBoost baseline model using the SAML-D dataset.</li>
-            <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/baseline_xgboost.py'>baseline_xgboost.py</a>:  Trains the final model using optimal parameters obtained from the hyperparameter tuning process.</li>
-        </ul>
+    <ul>
+        <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost/preprocess">Preprocess</a>: Implements additional feature generation and a custom time-based data split using Polars for efficient computation.</li>
+        <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost/results">results</a>: Contains notebooks with executed cells and saved results.</li>
+    </ul>
+<li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/utils'>utils</a>: Utility folder containing notebook configuration files.</li>
+<li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/EDA.ipynb'>EDA.ipynb</a>: Exploratory Data Analysis of SAML-D Dataset.</li>
+
+<!--
 - [config.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/config.py): include various paths such as `DATAPATH`, `SAMPLE_DATAPATH`, and others. Use the configuration file in your notebook
 - [notebooks/colab_setup.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/colab_setup.ipynb): instructions for setting up Google Colab
 - [notebooks/dataset_download.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/dataset_download.ipynb): generates a sample dataset (first N rows) from the full dataset for quick experimentation
@@ -478,3 +456,4 @@ df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weeke
 - [custom_split_polars.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/custom_split_polars.py): returns three Polars DataFrames: training, validation, and test sets. The input `df` must be a Polars DataFrame.
 - [recast_polars.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/recast_polars.py): downcasts integer columns to smaller integer dtypes (for example, from `Int64` to `Int32` or `Int16`) to reduce memory usage. The input `df` must be a Polars DataFrame and the function returns the recast Polars DataFrame.
 - [circular_transaction_count_polars.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/circular_transaction_count_polars.py): computes circular_transaction_count using a calendar‑month sliding window, ensuring rustworkx is installed.
+-->
