@@ -350,7 +350,7 @@ Our model was a **recurrent spatio-temporal GNN**, designed to analyze a sequenc
 
   - **Graph Snapshots:** The entire dataset was divided into 42 graph snapshots, each representing a 7-day window of transactions. 32 snapshots were used for training, 7 for validation, and 7 for testing.
   - **Focal Loss** with $\alpha = 0.25$ and $\gamma = 2$ to focus learning on the rare positive class.
-  - **Optimizer:** We used the **AdamW optimizer** with different learning rates for the RNN, GNN, and MLP and a weight decay of 1e-5.
+  - **Optimizer:** We used the **AdamW optimizer** with different learning rates for the RNN, GNN, and MLP and a weight decay of 1e-4.
   - **Learning Rate Scheduler:** we employed a **ReduceLROnPlateau** scheduler to reduce the learning rate when the validation loss plateaued.
   - **Threshold Selection:** Similar to the Transformer model, we selected the classification threshold by maximizing the F2-score on the validation set to prioritize recall.
   - **Training Time:** The model was trained for 100 epochs, using **Truncated Backpropagation Through Time (TBPTT)**, with a chuck size of 4 snapshots to manage memory and gradient flow. Total training time was approximately 15 minutes on a single NVIDIA A100 GPU.
