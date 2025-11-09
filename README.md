@@ -471,7 +471,7 @@ df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weeke
     <ul>
         <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/colab_setup.ipynb'>colab_setup.ipynb</a>: Instructions for setting up Google Colab.</li>
         <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/dataset_download.ipynb'>dataset_download.ipynb</a>: Generates a sample dataset (first N rows) from the full dataset for quick experimentation.</li>
-        <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/result_plots.ipynb'>result_plots.ipynb</a>: Produces Precision–Recall plots to compare the performance of three models (refer to Figure 13).</li>
+        <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/result_plots.ipynb'>result_plots.ipynb</a>: Produces Precision–Recall plots to compare the performance of three models (refer to Figure 14).</li>
     </ul>
 <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/utils'>utils</a>: Utility folder containing data download scripts and helper functions.</li>
 <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/EDA.ipynb'>EDA.ipynb</a>: Exploratory Data Analysis of SAML-D Dataset.</li>
