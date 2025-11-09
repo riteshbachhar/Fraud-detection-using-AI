@@ -469,8 +469,16 @@ df_test.with_columns([df_test["Date"].dt.weekday().is_in([5, 6]).alias("is_weeke
 </li>
             </ul>
              <li><a href="https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/tree/main/XGBoost/results">results</a>: Contains notebooks with executed cells and saved results.</li>
+            <ul>
+                <li><a>Hypertuning.ipynb</a>:</li>
+                <li><a>Preprocess.ipynb</a>:</li>
+                <li><a>SHAP_analysis.ipynb</a>:</li>
+                <li><a>XGBoost.ipynb</a>:</li>
+                <li><a>precision_xgboost.ny</a>:</li>
+                <li><a>recall_xgboost.ny</a>:</li>
+            </ul>
             <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/baseline_hypertuning.py'>baseline_hypertuning.py</a>: Implements hyperparameter optimization for the XGBoost baseline model using the SAML-D dataset.</li>
-            <li>https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/baseline_xgboost.py<a>baseline_xgboost.py</a>:  Trains the final model using optimal parameters obtained from the hyperparameter tuning process.</li>
+            <li><a href='https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/XGBoost/baseline_xgboost.py'>baseline_xgboost.py</a>:  Trains the final model using optimal parameters obtained from the hyperparameter tuning process.</li>
         </ul>
 - [config.py](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/config.py): include various paths such as `DATAPATH`, `SAMPLE_DATAPATH`, and others. Use the configuration file in your notebook
 - [notebooks/colab_setup.ipynb](https://github.com/hebabkb/Deep-Learning-for-Anti-Money-Laundering-Detecting-Suspicious-Transactions/blob/main/notebooks/colab_setup.ipynb): instructions for setting up Google Colab
