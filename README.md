@@ -354,7 +354,7 @@ Our Temporal GNN achieved an **Area Under the PR-Curve (AUPRC) of 0.85**, signif
 
 <p float="center">
   <img src="/Figures/training_validation_loss_tgnn.png" width="400" />
-  <img src="/Figures/confusion_matrix_tgnn.png" width="400" />
+  <img src="/Figures/confusion_matrix_tgnn.png" width="350" />
 </p>
 <p align="center"><b>Figure 13. Traning and validation loss curves (left) and confusion matrix on test set (right) for the Temporal Graph Neural Network (TGNN).
 </b></p>
